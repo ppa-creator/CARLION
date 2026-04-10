@@ -1,0 +1,1 @@
+from backend.models.vehicle import Vehicle
