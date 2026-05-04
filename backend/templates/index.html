@@ -723,7 +723,13 @@
 
         <!-- Mobile home dashboard -->
         <div class="mobile-home-panel active">
-            <div style="padding: 8px 0 16px; font-size:13px; color:var(--muted);">Vitaj v CARLION — vyber sekciu</div>
+            <div style="display:flex; align-items:center; justify-content:space-between; padding: 8px 0 16px;">
+                <div>
+                    <div style="font-size:18px; font-weight:700; color:var(--ink);">🚚 CARLION</div>
+                    <div id="mobileLoggedInAs" style="font-size:13px; color:var(--muted); margin-top:2px;">Načítavam...</div>
+                </div>
+                <button onclick="doLogout()" style="background:#e7dfd4; color:#374151; border:none; border-radius:12px; padding:9px 16px; font-size:13px; font-weight:600; cursor:pointer;">Odhlásiť</button>
+            </div>
             <div class="home-cards-grid">
                 <button class="home-card" onclick="goSection('vehicles')">
                     <span class="home-card-icon">🚚</span>
@@ -2473,6 +2479,8 @@ async function initPage() {
         const me = await meResp.json();
         const el = document.getElementById('loggedInAs');
         if (el) el.textContent = `Prihlásený: ${me.username}${me.is_admin ? ' (admin)' : ''}`;
+        const mel = document.getElementById('mobileLoggedInAs');
+        if (mel) mel.textContent = `Prihlásený: ${me.username}${me.is_admin ? ' (admin)' : ''}`;
     } catch (e) {
         window.location.href = '/login';
         return;
