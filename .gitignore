@@ -2,3 +2,4 @@
 __pycache__/
 *.pyc
 carlion.db
+test_carlion.db

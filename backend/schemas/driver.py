@@ -22,5 +22,6 @@ class DriverRead(BaseModel):
     license_number: Optional[str] = None
     license_valid_until: Optional[date] = None
     note: Optional[str] = None
+    is_active: bool
 
     model_config = {"from_attributes": True}

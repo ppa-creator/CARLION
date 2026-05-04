@@ -1,0 +1,2426 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CARLION</title>
+    <style>
+        :root {
+            --bg: #f4efe7;
+            --panel: #fffdf8;
+            --panel-strong: #f8f1e7;
+            --ink: #1f2933;
+            --muted: #6b7280;
+            --line: #d9cfc2;
+            --accent: #0f766e;
+            --accent-soft: #d7f0ed;
+            --accent-strong: #115e59;
+            --warning: #b45309;
+            --shadow: 0 18px 40px rgba(55, 45, 34, 0.08);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Trebuchet MS", "Bahnschrift", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(15, 118, 110, 0.12), transparent 30%),
+                radial-gradient(circle at bottom right, rgba(180, 83, 9, 0.12), transparent 28%),
+                linear-gradient(180deg, #f9f5ef 0%, #f1ebe2 100%);
+        }
+
+        button,
+        input,
+        select {
+            font: inherit;
+        }
+
+        .app-shell {
+            display: grid;
+            grid-template-columns: 280px minmax(0, 1fr);
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            padding: 28px 22px;
+            background: rgba(22, 28, 36, 0.94);
+            color: #f7f4ef;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .brand {
+            padding: 18px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, rgba(15, 118, 110, 0.3), rgba(255, 255, 255, 0.08));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .brand small {
+            display: block;
+            margin-bottom: 6px;
+            color: rgba(247, 244, 239, 0.72);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            font-size: 12px;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 32px;
+            line-height: 1;
+        }
+
+        .brand p {
+            margin: 10px 0 0;
+            color: rgba(247, 244, 239, 0.8);
+            line-height: 1.5;
+        }
+
+        .nav-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .nav-button {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.04);
+            color: inherit;
+            cursor: pointer;
+            text-align: left;
+            transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+        }
+
+        .nav-button:hover,
+        .nav-button.active {
+            transform: translateX(4px);
+            background: rgba(15, 118, 110, 0.24);
+            border-color: rgba(94, 234, 212, 0.24);
+        }
+
+        .nav-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 18px;
+        }
+
+        .nav-meta strong,
+        .nav-meta span {
+            display: block;
+        }
+
+        .nav-meta span {
+            margin-top: 2px;
+            font-size: 13px;
+            color: rgba(247, 244, 239, 0.7);
+        }
+
+        .sidebar-note {
+            margin-top: auto;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(247, 244, 239, 0.82);
+            line-height: 1.5;
+        }
+
+        .main-content {
+            padding: 26px;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 18px;
+            align-items: start;
+            margin-bottom: 22px;
+        }
+
+        .hero-card,
+        .stat-card,
+        .panel-card,
+        .table-card {
+            background: rgba(255, 253, 248, 0.92);
+            border: 1px solid rgba(217, 207, 194, 0.85);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+        }
+
+        .hero-card {
+            padding: 26px;
+        }
+
+        .hero-card small {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: var(--accent-strong);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 12px;
+        }
+
+        .hero-card h2 {
+            margin: 14px 0 10px;
+            font-size: 34px;
+            line-height: 1.1;
+        }
+
+        .hero-card p {
+            margin: 0;
+            max-width: 760px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+
+        .stat-card {
+            padding: 18px;
+        }
+
+        .stat-card span {
+            display: block;
+            color: var(--muted);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .stat-card strong {
+            display: block;
+            margin-top: 10px;
+            font-size: 30px;
+            line-height: 1;
+        }
+
+        .content-panel {
+            display: none;
+            gap: 20px;
+        }
+
+        .content-panel.active {
+            display: grid;
+        }
+
+        .split-layout {
+            grid-template-columns: 420px minmax(0, 1fr);
+        }
+
+        .panel-card,
+        .table-card {
+            padding: 22px;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .panel-header h3,
+        .table-card h3 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .panel-header p,
+        .table-card p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .field {
+            display: grid;
+            gap: 6px;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        .field label {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius-sm);
+            background: #fff;
+            color: var(--ink);
+        }
+
+        input:focus,
+        select:focus {
+            outline: 2px solid rgba(15, 118, 110, 0.16);
+            border-color: var(--accent);
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 6px;
+            color: var(--muted);
+        }
+
+        .checkbox-row input {
+            width: auto;
+            margin: 0;
+        }
+
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        button {
+            border: 0;
+            border-radius: 999px;
+            padding: 12px 18px;
+            cursor: pointer;
+            background: var(--accent);
+            color: #fff;
+            transition: transform 0.18s ease, opacity 0.18s ease, background 0.18s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        .button-secondary {
+            background: #e7dfd4;
+            color: var(--ink);
+        }
+
+        .button-warning {
+            background: #efe1cd;
+            color: #7c4a03;
+        }
+
+        .record-list {
+            display: grid;
+            gap: 14px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .record-item {
+            padding: 16px 18px;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: linear-gradient(180deg, #fffefb 0%, #f9f3ea 100%);
+        }
+
+        .record-item strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .record-meta {
+            display: grid;
+            gap: 4px;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+
+        .record-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .table-wrapper {
+            overflow: auto;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: #fff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 760px;
+        }
+
+        th,
+        td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #eee5d8;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            position: sticky;
+            top: 0;
+            background: #f7efe4;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+        }
+
+        tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .table-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .empty-state {
+            padding: 18px;
+            border: 1px dashed var(--line);
+            border-radius: 18px;
+            color: var(--muted);
+            background: rgba(255, 255, 255, 0.62);
+        }
+
+        @media (max-width: 1200px) {
+            .stats-grid,
+            .split-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .hero {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 920px) {
+            .app-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+                height: auto;
+            }
+
+            .nav-list {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 640px) {
+            .main-content {
+                padding: 18px;
+            }
+
+            .nav-list,
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-card h2 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar">
+        <div class="brand">
+            <small>Fleet Workspace</small>
+            <h1>CARLION</h1>
+            <p>Jedno miesto pre vozidlá, vodičov, jazdy, tankovania a ich vzájomné väzby.</p>
+        </div>
+
+        <nav class="nav-list">
+            <button class="nav-button active" type="button" data-section="vehicles" onclick="showSection('vehicles', this)">
+                <span class="nav-icon">🚚</span>
+                <span class="nav-meta"><strong>Vozidlá</strong><span>Park, servisné údaje, km</span></span>
+            </button>
+            <button class="nav-button" type="button" data-section="drivers" onclick="showSection('drivers', this)">
+                <span class="nav-icon">👤</span>
+                <span class="nav-meta"><strong>Vodiči</strong><span>Kontakty, vodičáky, stav</span></span>
+            </button>
+            <button class="nav-button" type="button" data-section="assignments" onclick="showSection('assignments', this)">
+                <span class="nav-icon">🔗</span>
+                <span class="nav-meta"><strong>Priradenia</strong><span>Kto jazdí na čom</span></span>
+            </button>
+            <button class="nav-button" type="button" data-section="trips" onclick="showSection('trips', this)">
+                <span class="nav-icon">🛣</span>
+                <span class="nav-meta"><strong>Jazdy</strong><span>Prehľad trás a kilometrov</span></span>
+            </button>
+            <button class="nav-button" type="button" data-section="refuels" onclick="showSection('refuels', this)">
+                <span class="nav-icon">⛽</span>
+                <span class="nav-meta"><strong>Tankovania</strong><span>Náklady a spotreba</span></span>
+            </button>
+            <button class="nav-button" type="button" data-section="prehlady" onclick="showSection('prehlady', this)">
+                <span class="nav-icon">📊</span>
+                <span class="nav-meta"><strong>Prehľady</strong><span>Grafy a štatistiky</span></span>
+            </button>
+            <button class="nav-button" type="button" data-section="nastavenia" onclick="showSection('nastavenia', this)">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-meta"><strong>Nastavenia</strong><span>Používatelia a prístupy</span></span>
+            </button>
+        </nav>
+
+        <div class="sidebar-note">
+            Navigácia prepína pracovné sekcie bez zmeny backendu. Keď budeme chcieť, tento základ vieme rozdeliť aj na samostatné stránky alebo React frontend.
+        </div>
+
+        <div style="padding: 0 16px 20px;">
+            <div id="loggedInAs" style="font-size:12px; color:#6b7280; margin-bottom:8px;"></div>
+            <button type="button" onclick="doLogout()" style="width:100%; padding:9px; background:#e7dfd4; border:none; border-radius:10px; font-size:13px; font-weight:600; cursor:pointer; color:#374151;">Odhlásiť sa</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <section class="hero">
+            <div class="hero-card">
+                <small>Operatíva vozového parku</small>
+                <h2>Prehľadné rozhranie pre dennú prácu s flotilou</h2>
+                <p>Formuláre zostali napojené na rovnaké endpointy, ale rozhranie je už rozdelené do pracovných celkov. Môžeš prepínať sekcie vľavo a pracovať samostatne s vozidlami, vodičmi, jazdami aj tankovaniami.</p>
+            </div>
+        </section>
+
+        <section class="stats-grid">
+            <article class="stat-card"><span>Vozidlá</span><strong id="vehiclesCount">0</strong></article>
+            <article class="stat-card"><span>Vodiči</span><strong id="driversCount">0</strong></article>
+            <article class="stat-card"><span>Jazdy</span><strong id="tripsCount">0</strong></article>
+            <article class="stat-card"><span>Tankovania</span><strong id="refuelsCount">0</strong></article>
+        </section>
+
+        <section class="hero" id="sectionFocus">
+            <div class="hero-card">
+                <small id="sectionEyebrow">Aktívna sekcia</small>
+                <h2 id="sectionTitle">Vozidlá</h2>
+                <p id="sectionDescription">Správa vozového parku, servisných údajov a základných technických informácií.</p>
+            </div>
+        </section>
+
+        <section class="content-panel split-layout active" data-section="vehicles">
+            <article class="panel-card">
+                <div class="panel-header">
+                    <div>
+                        <h3>Vozidlo</h3>
+                        <p>Vytvorenie alebo úprava kompletného záznamu o vozidle.</p>
+                    </div>
+                </div>
+
+                <input id="vehicleId" type="hidden">
+                <div class="form-grid">
+                    <div class="field"><label for="plate">ŠPZ</label><input id="plate" placeholder="BA123AB"></div>
+                    <div class="field"><label for="vin">VIN</label><input id="vin" placeholder="VIN číslo"></div>
+                    <div class="field"><label for="brand">Značka</label><input id="brand" placeholder="Scania"></div>
+                    <div class="field"><label for="model">Model</label><input id="model" placeholder="R500"></div>
+                    <div class="field"><label for="year">Rok výroby</label><input id="year" type="number" placeholder="2024"></div>
+                    <div class="field"><label for="fuelType">Palivo</label><input id="fuelType" placeholder="Diesel"></div>
+                    <div class="field"><label for="currentKm">Aktuálne km</label><input id="currentKm" type="number" placeholder="145000"></div>
+                    <div class="field full"><label for="vehicleNote">Poznámka</label><input id="vehicleNote" placeholder="Interná poznámka k vozidlu"></div>
+                </div>
+                <div class="button-row">
+                    <button type="button" onclick="saveVehicle()">Uložiť vozidlo</button>
+                    <button class="button-secondary" type="button" onclick="clearVehicleForm()">Nové vozidlo</button>
+                </div>
+            </article>
+
+            <article class="table-card">
+                <div class="panel-header">
+                    <div>
+                        <h3>Zoznam vozidiel</h3>
+                        <p>Prehľad vozového parku s rýchlym vstupom do editácie.</p>
+                    </div>
+                    <button class="button-secondary" type="button" onclick="loadVehicles()">Obnoviť</button>
+                </div>
+                <ul id="vehicleList" class="record-list"></ul>
+            </article>
+        </section>
+
+        <section class="content-panel split-layout" data-section="drivers">
+            <article class="panel-card">
+                <div class="panel-header">
+                    <div>
+                        <h3>Vodič</h3>
+                        <p>Kontakty, vodičák a interné poznámky na jednom mieste.</p>
+                    </div>
+                </div>
+
+                <input id="driverId" type="hidden">
+                <div class="form-grid">
+                    <div class="field"><label for="firstName">Meno</label><input id="firstName" placeholder="Ján"></div>
+                    <div class="field"><label for="lastName">Priezvisko</label><input id="lastName" placeholder="Novák"></div>
+                    <div class="field"><label for="phone">Telefón</label><input id="phone" placeholder="+421..."></div>
+                    <div class="field"><label for="email">Email</label><input id="email" placeholder="meno@firma.sk"></div>
+                    <div class="field"><label for="licenseNumber">Číslo vodičáku</label><input id="licenseNumber" placeholder="DL-001"></div>
+                    <div class="field"><label for="licenseValidUntil">Platnosť vodičáku</label><input id="licenseValidUntil" type="date"></div>
+                    <div class="field full"><label for="driverNote">Poznámka</label><input id="driverNote" placeholder="Poznámka k vodičovi"></div>
+                </div>
+                <div class="button-row">
+                    <button type="button" onclick="saveDriver()">Uložiť vodiča</button>
+                    <button class="button-secondary" type="button" onclick="clearDriverForm()">Nový vodič</button>
+                </div>
+            </article>
+
+            <article class="table-card">
+                <div class="panel-header">
+                    <div>
+                        <h3>Zoznam vodičov</h3>
+                        <p>Aktívni vodiči s možnosťou úpravy a deaktivácie.</p>
+                    </div>
+                    <button class="button-secondary" type="button" onclick="loadDrivers()">Obnoviť</button>
+                </div>
+                <ul id="driverList" class="record-list"></ul>
+            </article>
+        </section>
+
+        <section class="content-panel split-layout" data-section="assignments">
+            <article class="panel-card">
+                <div class="panel-header">
+                    <div>
+                        <h3>Priradenie</h3>
+                        <p>Napojenie vodiča na vozidlo s dátumom začiatku a hlavným vozidlom.</p>
+                    </div>
+                </div>
+
+                <input type="hidden" id="assignmentId">
+                <div class="form-grid">
+                    <div class="field"><label for="driverSelect">Vodič</label><select id="driverSelect"></select></div>
+                    <div class="field"><label for="vehicleSelect">Vozidlo</label><select id="vehicleSelect"></select></div>
+                    <div class="field"><label for="assignedFrom">Priradené od</label><input id="assignedFrom" type="date"></div>
+                    <div class="field"><label for="assignedTo">Priradené do</label><input id="assignedTo" type="date"></div>
+                    <div class="field full"><label for="assignmentNote">Poznámka</label><input id="assignmentNote" type="text" placeholder="voliteľná poznámka"></div>
+                    <div class="field full">
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="isPrimary">
+                            <label for="isPrimary">Hlavné vozidlo</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="button-row">
+                    <button type="button" id="saveAssignmentBtn" onclick="saveAssignment()">Uložiť priradenie</button>
+                    <button class="button-secondary" type="button" id="cancelAssignmentBtn" style="display:none" onclick="clearAssignmentForm()">Zrušiť</button>
+                    <button class="button-secondary" type="button" onclick="loadAssignments()">Obnoviť zoznam</button>
+                </div>
+            </article>
+
+            <article class="table-card">
+                <div class="panel-header">
+                    <div>
+                        <h3>Aktívne a historické priradenia</h3>
+                        <p>Ukončenie alebo odstránenie väzieb medzi vodičmi a vozidlami.</p>
+                    </div>
+                </div>
+                <ul id="assignmentList" class="record-list"></ul>
+            </article>
+        </section>
+
+        <section class="content-panel split-layout" data-section="trips">
+            <article class="panel-card">
+                <div class="panel-header">
+                    <div>
+                        <h3>Jazda</h3>
+                        <p>Evidencia trás, kilometrov a účelu jazdy.</p>
+                    </div>
+                </div>
+
+                <input id="tripId" type="hidden">
+                <div class="form-grid">
+                    <div class="field"><label for="tripDriverSelect">Vodič</label><select id="tripDriverSelect"></select></div>
+                    <div class="field"><label for="tripVehicleSelect">Vozidlo</label><select id="tripVehicleSelect"></select></div>
+                    <div class="field"><label for="tripDate">Dátum jazdy</label><input id="tripDate" type="date" oninput="onTripDateChange(this)"></div>
+                    <div class="field"><label for="tripRouteFrom">Z (odchod)</label><input id="tripRouteFrom" placeholder="Bratislava"></div>
+                    <div class="field"><label for="tripRouteTo">DO (ciel)</label><input id="tripRouteTo" placeholder="Košice"></div>
+                    <div class="field"><label for="tripStartKm">Počiatočný km</label><input id="tripStartKm" type="number" placeholder="100000" oninput="calcTripDistance()"></div>
+                    <div class="field"><label for="tripEndKm">Koncový km</label><input id="tripEndKm" type="number" placeholder="100250" oninput="calcTripDistance()"></div>
+                    <div class="field"><label for="tripDistance">Dĺžka jazdy (km)</label><input id="tripDistance" type="number" placeholder="250" oninput="calcTripEndKm()"></div>
+                    <div class="field full">
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="tripUpdateKm" checked>
+                            <label for="tripUpdateKm">Aktualizovať aktuálne km vozidla po uložení <span style="color:var(--muted);font-size:12px">(odškrtni pre historické jazdy)</span></label>
+                        </div>
+                    </div>
+                    <div class="field"><label for="tripPurpose">Účel jazdy</label><input id="tripPurpose" placeholder="Rozvoz, servis..."></div>
+                    <div class="field"><label for="tripRefuelSelect">Priradené tankovanie</label><select id="tripRefuelSelect" onchange="onTripRefuelChange(this)"><option value="">Bez tankovania</option></select></div>
+                    <div class="field full"><label for="tripNote">Poznámka</label><input id="tripNote" placeholder="Doplňujúca poznámka"></div>
+                </div>
+                <div class="button-row">
+                    <button type="button" onclick="saveTrip()">Uložiť jazdu</button>
+                    <button class="button-secondary" type="button" onclick="clearTripForm()">Nová jazda</button>
+                </div>
+            </article>
+
+            <article class="table-card">
+                <div class="panel-header">
+                    <div>
+                        <h3>Tabuľka jázd</h3>
+                        <p>Prehľad trás, najazdených kilometrov a účelu.</p>
+                    </div>
+                    <button class="button-secondary" type="button" onclick="loadTrips()">Obnoviť</button>
+                </div>
+                <div class="table-wrapper">
+                    <table id="tripTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Dátum</th>
+                                <th>Vodič</th>
+                                <th>Vozidlo</th>
+                                <th>KM od-do</th>
+                                <th>Vzdialenost</th>
+                                <th>Z</th>
+                                <th>DO</th>
+                                <th>Účel</th>
+                                <th>Poznámka</th>
+                                <th>Tankovanie</th>
+                                <th>Akcie</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tripTableBody"></tbody>
+                    </table>
+                </div>
+            </article>
+        </section>
+
+        <section class="content-panel split-layout" data-section="refuels">
+            <article class="panel-card">
+                <div class="panel-header">
+                    <div>
+                        <h3>Tankovanie</h3>
+                        <p>Náklady, litre, stanica a stav odometra.</p>
+                    </div>
+                </div>
+
+                <input id="refuelId" type="hidden">
+                <div class="form-grid">
+                    <div class="field"><label for="refuelVehicleSelect">Vozidlo</label><select id="refuelVehicleSelect"></select></div>
+                    <div class="field"><label for="refuelDriverSelect">Vodič</label><select id="refuelDriverSelect"></select></div>
+                    <div class="field"><label for="refuelDate">Dátum tankovania</label><input id="refuelDate" type="date"></div>
+                    <div class="field"><label for="refuelTime">Cas tankovania</label><input id="refuelTime" type="time"></div>
+                    <div class="field"><label for="refuelStation">Čerpacia stanica</label><input id="refuelStation" placeholder="Shell, OMV..." list="stationSuggestions" autocomplete="off"><datalist id="stationSuggestions"></datalist></div>
+                    <div class="field"><label for="refuelFuelType">Druh paliva</label><input id="refuelFuelType" placeholder="NAFTA" list="fuelTypeSuggestions" autocomplete="off"><datalist id="fuelTypeSuggestions"><option value="NAFTA"><option value="BENZIN"><option value="ELEKTRINA"><option value="AdBLUE"></datalist></div>
+                    <div class="field"><label for="refuelLiters">Litrov</label><input id="refuelLiters" type="number" step="0.01" placeholder="42.50" oninput="calcPricePerLiter()"></div>
+                    <div class="field"><label for="refuelTotalCost">Celková cena</label><input id="refuelTotalCost" type="number" step="0.01" placeholder="75.90" oninput="calcPricePerLiter()"></div>
+                    <div class="field"><label for="refuelPricePerLiter">Cena za liter <span style="color:var(--accent);font-size:12px">(vypočíta sa automaticky)</span></label><input id="refuelPricePerLiter" type="number" step="0.001" placeholder="vypočíta sa" style="background:#f4f0e8"></div>
+                    <div class="field"><label for="refuelOdometerKm">Stav km</label><input id="refuelOdometerKm" type="number" placeholder="124000"></div>
+                    <div class="field full"><label for="refuelNote">Poznámka</label><input id="refuelNote" placeholder="Poznámka k tankovaniu"></div>
+                </div>
+                <div class="button-row">
+                    <button type="button" onclick="saveRefuel()">Uložiť tankovanie</button>
+                    <button class="button-secondary" type="button" onclick="clearRefuelForm()">Nové tankovanie</button>
+                </div>
+            </article>
+
+            <article class="table-card">
+                <div class="panel-header">
+                    <div>
+                        <h3>Tabuľka tankovaní</h3>
+                        <p>Jednoduchý prehľad nákladov podľa vozidiel.</p>
+                    </div>
+                    <button class="button-secondary" type="button" onclick="loadRefuels()">Obnoviť</button>
+                </div>
+                <div class="table-wrapper">
+                    <table id="refuelTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Dátum</th>
+                                <th>Cas</th>
+                                <th>Vozidlo</th>
+                                <th>Vodič</th>
+                                <th>Litrov</th>
+                                <th>Cena spolu</th>
+                                <th>Cena/l</th>
+                                <th>KM</th>
+                                <th>Stanica</th>
+                                <th>Palivo</th>
+                                <th>Poznámka</th>
+                                <th>Akcie</th>
+                            </tr>
+                        </thead>
+                        <tbody id="refuelTableBody"></tbody>
+                    </table>
+                </div>
+            </article>
+        </section>
+
+        <section class="content-panel" data-section="prehlady">
+            <article class="panel-card" style="grid-column: 1 / -1;">
+                <div class="panel-header">
+                    <div>
+                        <h3>Prehľady a štatistiky</h3>
+                        <p>Sumárne náklady, najazdené kilometry a výdavky za palivo.</p>
+                    </div>
+                    <button class="button-secondary" type="button" onclick="loadPrehlady()">Obnoviť</button>
+                </div>
+
+                <div id="prehladyGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:16px; margin-top:12px;"></div>
+
+                <h4 style="margin:28px 0 12px;">Náklady na tankovanie podľa vozidla</h4>
+                <div class="table-wrapper">
+                    <table id="prehladyRefuelTable">
+                        <thead>
+                            <tr><th>Vozidlo</th><th>Počet tankovaní</th><th>Litrov celkom</th><th>Náklady celkom (€)</th><th>Priem. cena/l (€)</th></tr>
+                        </thead>
+                        <tbody id="prehladyRefuelBody"></tbody>
+                    </table>
+                </div>
+
+                <h4 style="margin:28px 0 12px;">Jazdy podľa vodiča</h4>
+                <div class="table-wrapper">
+                    <table id="prehladyTripsTable">
+                        <thead>
+                            <tr><th>Vodič</th><th>Počet jázd</th><th>Km celkom</th></tr>
+                        </thead>
+                        <tbody id="prehladyTripsBody"></tbody>
+                    </table>
+                </div>
+            </article>
+        </section>
+
+        <section class="content-panel split-layout" data-section="nastavenia">
+            <article class="panel-card">
+                <div class="panel-header">
+                    <div>
+                        <h3>Nový používateľ</h3>
+                        <p>Vytvorenie prístupu do systému. Len admin môže pridávať používateľov.</p>
+                    </div>
+                </div>
+                <div id="nastavenieAdminOnly" style="display:none;">
+                    <div class="form-grid">
+                        <div class="field"><label for="newUsername">Používateľské meno</label><input id="newUsername" type="text" placeholder="jan.novak" autocomplete="off"></div>
+                        <div class="field"><label for="newPassword">Heslo</label><input id="newPassword" type="password" placeholder="minimálne 6 znakov"></div>
+                        <div class="field full">
+                            <div class="checkbox-row">
+                                <input type="checkbox" id="newIsAdmin">
+                                <label for="newIsAdmin">Administrátor</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="button-row">
+                        <button type="button" onclick="createUser()">Vytvoriť účet</button>
+                    </div>
+                </div>
+                <div id="nastavenieNonAdmin" style="display:none;">
+                    <p style="color:#6b7280; padding:12px 0;">Správu používateľov môže vykonávať len administrátor.</p>
+                </div>
+            </article>
+
+            <article class="table-card">
+                <div class="panel-header">
+                    <div>
+                        <h3>Zoznam používateľov</h3>
+                        <p>Aktívne prístupy do systému CARLION.</p>
+                    </div>
+                    <button class="button-secondary" type="button" onclick="loadNastavenia()">Obnoviť</button>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>ID</th><th>Meno</th><th>Rola</th><th>Stav</th><th>Trial do</th><th>Predplatné do</th><th>Akcie</th></tr>
+                        </thead>
+                        <tbody id="usersTableBody"></tbody>
+                    </table>
+                </div>
+            </article>
+        </section>
+    </main>
+</div>
+
+<!-- Modal: priradenie tankovania k jazde -->
+<div id="refuelModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:#fffdf8; border-radius:20px; padding:28px; max-width:600px; width:90%; max-height:80vh; overflow-y:auto; box-shadow:0 24px 60px rgba(0,0,0,0.2);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+            <h3 style="margin:0;" id="refuelModalTitle">Tankovania k jazde</h3>
+            <button type="button" onclick="closeRefuelModal()" style="background:#e7dfd4; color:#1f2933; border-radius:999px; padding:8px 14px;">Zatvoriť</button>
+        </div>
+        <p id="refuelModalSubtitle" style="color:#6b7280; margin:0 0 16px;"></p>
+        <ul id="refuelModalList" class="record-list"></ul>
+    </div>
+</div>
+
+<script>
+const SECTION_META = {
+    vehicles: {
+        eyebrow: 'Aktívna sekcia',
+        title: 'Vozidlá',
+        description: 'Správa vozového parku, servisných údajov a základných technických informácií.'
+    },
+    drivers: {
+        eyebrow: 'Aktívna sekcia',
+        title: 'Vodiči',
+        description: 'Kontakty, vodičské oprávnenia a interné poznámky k vodičom.'
+    },
+    assignments: {
+        eyebrow: 'Aktívna sekcia',
+        title: 'Priradenia',
+        description: 'Aktívne a historické väzby medzi vodičmi a vozidlami.'
+    },
+    trips: {
+        eyebrow: 'Aktívna sekcia',
+        title: 'Jazdy',
+        description: 'Prehľad trás, kilometrov a účelu jázd pre dennú operatívu.'
+    },
+    refuels: {
+        eyebrow: 'Aktívna sekcia',
+        title: 'Tankovania',
+        description: 'Evidencia litrov, cien, čerpacích staníc a stavu odometra.'
+    },
+    prehlady: {
+        eyebrow: 'Štatistiky',
+        title: 'Prehľady',
+        description: 'Grafy, sumárne náklady a prehľady najazdených kilometrov.'
+    },
+    nastavenia: {
+        eyebrow: 'Správa systému',
+        title: 'Nastavenia',
+        description: 'Správa používateľských kont a prístupov do systému.'
+    }
+};
+
+function updateSectionFocus(sectionName) {
+    const meta = SECTION_META[sectionName] || SECTION_META.vehicles;
+    document.getElementById('sectionEyebrow').textContent = meta.eyebrow;
+    document.getElementById('sectionTitle').textContent = meta.title;
+    document.getElementById('sectionDescription').textContent = meta.description;
+}
+
+async function loadSectionData(sectionName) {
+    if (sectionName === 'vehicles') {
+        await loadVehicles();
+        return;
+    }
+
+    if (sectionName === 'drivers') {
+        await loadDrivers();
+        return;
+    }
+
+    if (sectionName === 'assignments') {
+        await Promise.all([loadDrivers(), loadVehicles()]);
+        await loadAssignments();
+        return;
+    }
+
+    if (sectionName === 'trips') {
+        await Promise.all([loadDrivers(), loadVehicles()]);
+        await loadTrips();
+        return;
+    }
+
+    if (sectionName === 'refuels') {
+        await Promise.all([loadDrivers(), loadVehicles()]);
+        await loadRefuels();
+        return;
+    }
+
+    if (sectionName === 'prehlady') {
+        await loadPrehlady();
+        return;
+    }
+
+    if (sectionName === 'nastavenia') {
+        await loadNastavenia();
+    }
+}
+
+function showSection(sectionName, triggerButton = null) {
+    document.querySelectorAll('.content-panel').forEach(panel => {
+        panel.classList.toggle('active', panel.dataset.section === sectionName);
+    });
+
+    document.querySelectorAll('.nav-button').forEach(button => {
+        button.classList.toggle('active', button.dataset.section === sectionName);
+    });
+
+    updateSectionFocus(sectionName);
+    void loadSectionData(sectionName);
+
+    if (triggerButton) {
+        triggerButton.blur();
+    }
+}
+
+function setCount(id, count) {
+    const element = document.getElementById(id);
+    if (element) {
+        element.textContent = String(count);
+    }
+}
+
+function renderEmptyState(container, message, tagName = 'div') {
+    container.innerHTML = '';
+    const element = document.createElement(tagName);
+    element.className = 'empty-state';
+    element.textContent = message;
+    container.appendChild(element);
+}
+
+async function loadDashboardCounts() {
+    const [vehiclesResponse, driversResponse, tripsResponse, refuelsResponse] = await Promise.all([
+        fetch('/vehicles'),
+        fetch('/drivers'),
+        fetch('/trips'),
+        fetch('/refuels')
+    ]);
+
+    const [vehicles, drivers, trips, refuels] = await Promise.all([
+        vehiclesResponse.json(),
+        driversResponse.json(),
+        tripsResponse.json(),
+        refuelsResponse.json()
+    ]);
+
+    setCount('vehiclesCount', vehicles.length);
+    setCount('driversCount', drivers.length);
+    setCount('tripsCount', trips.length);
+    setCount('refuelsCount', refuels.length);
+}
+
+async function loadVehicles() {
+    const response = await fetch('/vehicles');
+    const data = await response.json();
+
+    const list = document.getElementById('vehicleList');
+    list.innerHTML = '';
+    setCount('vehiclesCount', data.length);
+
+    const vehicleSelect = document.getElementById('vehicleSelect');
+    vehicleSelect.innerHTML = '';
+
+    if (data.length === 0) {
+        renderEmptyState(list, 'Zatiaľ nie sú evidované žiadne vozidlá.', 'li');
+    }
+
+    data.forEach(v => {
+        const li = document.createElement('li');
+        li.className = 'record-item';
+        li.innerHTML = `
+            <strong>${v.id} · ${v.license_plate} · ${v.brand} ${v.model}</strong>
+            <div class="record-meta">
+                <span>VIN: ${v.vin ?? 'nezadaný'}</span>
+                <span>Rok výroby: ${v.year ?? 'nezadaný'}</span>
+                <span>Palivo: ${v.fuel_type ?? 'nezadané'}</span>
+                <span>Aktuálne km: ${v.current_km ?? 'nezadané'}</span>
+                <span>Poznámka: ${v.note ?? 'žiadna'}</span>
+            </div>
+            <div class="record-actions">
+                <button type="button" class="edit-vehicle-btn"
+                    data-id="${v.id}"
+                    data-plate="${v.license_plate ?? ''}"
+                    data-vin="${v.vin ?? ''}"
+                    data-brand="${v.brand ?? ''}"
+                    data-model="${v.model ?? ''}"
+                    data-year="${v.year ?? ''}"
+                    data-fuel="${v.fuel_type ?? ''}"
+                    data-km="${v.current_km ?? ''}"
+                    data-note="${v.note ?? ''}"
+                >Upraviť</button>
+                <button class="button-warning" type="button" onclick="deleteVehicle(${v.id})">Odstrániť</button>
+            </div>
+        `;
+        list.appendChild(li);
+
+        const option = document.createElement('option');
+        option.value = v.id;
+        option.text = `${v.license_plate} - ${v.brand} ${v.model}`;
+        vehicleSelect.appendChild(option);
+    });
+
+    refreshVehicleSelects(data);
+
+    document.querySelectorAll('.edit-vehicle-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const d = btn.dataset;
+            editVehicle(d.id, d.plate, d.vin, d.brand, d.model, d.year, d.fuel, d.km, d.note);
+        });
+    });
+}
+
+async function saveVehicle() {
+    const vehicleId = document.getElementById('vehicleId').value;
+    const plate = document.getElementById('plate').value;
+    const vin = document.getElementById('vin').value;
+    const brand = document.getElementById('brand').value;
+    const model = document.getElementById('model').value;
+    const year = document.getElementById('year').value;
+    const fuelType = document.getElementById('fuelType').value;
+    const currentKm = document.getElementById('currentKm').value;
+    const vehicleNote = document.getElementById('vehicleNote').value;
+
+    let url = '/vehicles';
+    let method = 'POST';
+
+    if (vehicleId) {
+        url = `/vehicles/${vehicleId}`;
+        method = 'PUT';
+    }
+
+    const response = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            license_plate: plate,
+            vin: vin || null,
+            brand: brand,
+            model: model,
+            year: year ? Number.parseInt(year, 10) : null,
+            fuel_type: fuelType || null,
+            current_km: currentKm ? Number.parseInt(currentKm, 10) : null,
+            note: vehicleNote || null
+        })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        alert(result.detail || 'Chyba pri ukladaní vozidla');
+        return;
+    }
+
+    clearVehicleForm();
+
+    await loadVehicles();
+    await loadTrips();
+    await loadRefuels();
+}
+
+function editVehicle(id, plate, vin, brand, model, year, fuelType, currentKm, note) {
+    document.getElementById('vehicleId').value = id;
+    document.getElementById('plate').value = plate || '';
+    document.getElementById('vin').value = vin || '';
+    document.getElementById('brand').value = brand || '';
+    document.getElementById('model').value = model || '';
+    document.getElementById('year').value = year || '';
+    document.getElementById('fuelType').value = fuelType || '';
+    document.getElementById('currentKm').value = currentKm || '';
+    document.getElementById('vehicleNote').value = note || '';
+
+    const saveBtn = document.querySelector('[data-section="vehicles"] .panel-card button[onclick="saveVehicle()"]');
+    if (saveBtn) saveBtn.textContent = 'Uložiť zmeny';
+
+    const formCard = document.querySelector('[data-section="vehicles"] .panel-card');
+    if (formCard) {
+        formCard.style.outline = '2px solid var(--accent)';
+        formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    document.getElementById('plate').focus();
+}
+
+function clearVehicleForm() {
+    document.getElementById('vehicleId').value = '';
+    document.getElementById('plate').value = '';
+    document.getElementById('vin').value = '';
+    document.getElementById('brand').value = '';
+    document.getElementById('model').value = '';
+    document.getElementById('year').value = '';
+    document.getElementById('fuelType').value = '';
+    document.getElementById('currentKm').value = '';
+    document.getElementById('vehicleNote').value = '';
+
+    const saveBtn = document.querySelector('[data-section="vehicles"] .panel-card button[onclick="saveVehicle()"]');
+    if (saveBtn) saveBtn.textContent = 'Uložiť vozidlo';
+
+    const formCard = document.querySelector('[data-section="vehicles"] .panel-card');
+    if (formCard) formCard.style.outline = '';
+}
+
+async function deleteVehicle(vehicleId) {
+    const confirmed = confirm('Naozaj chceš odstrániť toto vozidlo?');
+
+    if (!confirmed) {
+        return;
+    }
+
+    const response = await fetch(`/vehicles/${vehicleId}`, {
+        method: 'DELETE'
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        alert(result.detail || 'Chyba pri odstraňovaní vozidla');
+        return;
+    }
+
+    if (document.getElementById('vehicleId').value === String(vehicleId)) {
+        clearVehicleForm();
+    }
+
+    await loadVehicles();
+    await loadAssignments();
+    await loadTrips();
+    await loadRefuels();
+}
+
+async function loadDrivers() {
+    const response = await fetch('/drivers');
+    const data = await response.json();
+
+    const list = document.getElementById('driverList');
+    list.innerHTML = '';
+    setCount('driversCount', data.length);
+
+    const driverSelect = document.getElementById('driverSelect');
+    driverSelect.innerHTML = '';
+
+    if (data.length === 0) {
+        renderEmptyState(list, 'Zatiaľ nie sú evidovaní žiadni aktívni vodiči.', 'li');
+    }
+
+    data.forEach(d => {
+        const li = document.createElement('li');
+        li.className = 'record-item';
+        li.innerHTML = `
+            <strong>${d.id} · ${d.first_name} ${d.last_name}</strong>
+            <div class="record-meta">
+                <span>Telefón: ${d.phone ?? 'nezadaný'}</span>
+                <span>Email: ${d.email ?? 'nezadaný'}</span>
+                <span>Vodičák: ${d.license_number ?? 'nezadaný'}</span>
+                <span>Platnosť vodičáku: ${d.license_valid_until ?? 'nezadaná'}</span>
+                <span>Poznámka: ${d.note ?? 'žiadna'}</span>
+                <span>Stav: ${d.is_active ? 'Aktívny' : 'Neaktívny'}</span>
+            </div>
+            <div class="record-actions">
+                <button type="button" class="edit-driver-btn"
+                    data-id="${d.id}"
+                    data-firstname="${d.first_name ?? ''}"
+                    data-lastname="${d.last_name ?? ''}"
+                    data-phone="${d.phone ?? ''}"
+                    data-email="${d.email ?? ''}"
+                    data-license="${d.license_number ?? ''}"
+                    data-licenseuntil="${d.license_valid_until ?? ''}"
+                    data-note="${d.note ?? ''}"
+                >Upraviť</button>
+                <button class="button-warning" type="button" onclick="deleteDriver(${d.id})">Odstrániť</button>
+            </div>
+        `;
+        list.appendChild(li);
+
+        const option = document.createElement('option');
+        option.value = d.id;
+        option.text = `${d.id} - ${d.first_name} ${d.last_name} - VP: ${d.license_number ?? 'nezadane'}`;
+        driverSelect.appendChild(option);
+    });
+
+    refreshDriverSelects(data);
+
+    document.querySelectorAll('.edit-driver-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const d = btn.dataset;
+            editDriver(d.id, d.firstname, d.lastname, d.phone, d.email, d.license, d.licenseuntil, d.note);
+        });
+    });
+}
+
+function refreshDriverSelects(drivers) {
+    const tripDriverSelect = document.getElementById('tripDriverSelect');
+    const refuelDriverSelect = document.getElementById('refuelDriverSelect');
+
+    tripDriverSelect.innerHTML = '';
+    refuelDriverSelect.innerHTML = '<option value="">Bez vodiča</option>';
+
+    drivers.forEach(d => {
+        const tripOption = document.createElement('option');
+        tripOption.value = d.id;
+        tripOption.text = `${d.id} - ${d.first_name} ${d.last_name}`;
+        tripDriverSelect.appendChild(tripOption);
+
+        const refuelOption = document.createElement('option');
+        refuelOption.value = d.id;
+        refuelOption.text = `${d.id} - ${d.first_name} ${d.last_name}`;
+        refuelDriverSelect.appendChild(refuelOption);
+    });
+}
+
+function refreshVehicleSelects(vehicles) {
+    const tripVehicleSelect = document.getElementById('tripVehicleSelect');
+    const refuelVehicleSelect = document.getElementById('refuelVehicleSelect');
+
+    tripVehicleSelect.innerHTML = '';
+    refuelVehicleSelect.innerHTML = '';
+
+    vehicles.forEach(v => {
+        const text = `${v.license_plate} - ${v.brand} ${v.model}`;
+
+        const tripOption = document.createElement('option');
+        tripOption.value = v.id;
+        tripOption.text = text;
+        tripVehicleSelect.appendChild(tripOption);
+
+        const refuelOption = document.createElement('option');
+        refuelOption.value = v.id;
+        refuelOption.text = text;
+        refuelVehicleSelect.appendChild(refuelOption);
+    });
+}
+
+async function saveDriver() {
+    const driverId = document.getElementById('driverId').value;
+    const firstName = document.getElementById('firstName').value;
+    const lastName = document.getElementById('lastName').value;
+    const phone = document.getElementById('phone').value;
+    const email = document.getElementById('email').value;
+    const licenseNumber = document.getElementById('licenseNumber').value;
+    const licenseValidUntil = document.getElementById('licenseValidUntil').value;
+    const driverNote = document.getElementById('driverNote').value;
+
+    const payload = {
+        first_name: firstName,
+        last_name: lastName,
+        phone: phone || null,
+        email: email || null,
+        license_number: licenseNumber || null,
+        license_valid_until: licenseValidUntil || null,
+        note: driverNote || null
+    };
+
+    let url = '/drivers';
+    let method = 'POST';
+
+    if (driverId) {
+        url = `/drivers/${driverId}`;
+        method = 'PUT';
+    }
+
+    const response = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        alert(result.detail || 'Chyba pri ukladaní vodiča');
+        return;
+    }
+
+    clearDriverForm();
+    await loadDrivers();
+    await loadTrips();
+    await loadRefuels();
+}
+
+function editDriver(id, firstName, lastName, phone, email, licenseNumber, licenseValidUntil, note) {
+    document.getElementById('driverId').value = id;
+    document.getElementById('firstName').value = firstName || '';
+    document.getElementById('lastName').value = lastName || '';
+    document.getElementById('phone').value = phone || '';
+    document.getElementById('email').value = email || '';
+    document.getElementById('licenseNumber').value = licenseNumber || '';
+    document.getElementById('licenseValidUntil').value = licenseValidUntil || '';
+    document.getElementById('driverNote').value = note || '';
+}
+
+function clearDriverForm() {
+    document.getElementById('driverId').value = '';
+    document.getElementById('firstName').value = '';
+    document.getElementById('lastName').value = '';
+    document.getElementById('phone').value = '';
+    document.getElementById('email').value = '';
+    document.getElementById('licenseNumber').value = '';
+    document.getElementById('licenseValidUntil').value = '';
+    document.getElementById('driverNote').value = '';
+}
+
+async function deleteDriver(driverId) {
+    const confirmed = confirm('Naozaj chceš odstrániť tohto vodiča?');
+
+    if (!confirmed) {
+        return;
+    }
+
+    const response = await fetch(`/drivers/${driverId}`, {
+        method: 'DELETE'
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+        clearDriverForm();
+        await loadDrivers();
+        await loadAssignments();
+        await loadTrips();
+        await loadRefuels();
+        return;
+    }
+
+    if (result.detail === 'Driver has assignments and cannot be deleted') {
+        const deactivateConfirmed = confirm(
+            'Vodič má priradenia. Chceš ukončiť všetky aktívne priradenia a vodiča deaktivovať?'
+        );
+
+        if (!deactivateConfirmed) {
+            return;
+        }
+
+        const deactivateResponse = await fetch(`/drivers/${driverId}/deactivate`, {
+            method: 'POST'
+        });
+
+        const deactivateResult = await deactivateResponse.json();
+
+        if (!deactivateResponse.ok) {
+            alert(deactivateResult.detail || 'Chyba pri deaktivácii vodiča');
+            return;
+        }
+
+        clearDriverForm();
+        await loadDrivers();
+        await loadAssignments();
+        await loadTrips();
+        await loadRefuels();
+        return;
+    }
+
+    alert(result.detail || 'Chyba pri odstraňovaní vodiča');
+}
+
+async function saveAssignment() {
+    const assignmentId = document.getElementById('assignmentId').value;
+    const driverId = parseInt(document.getElementById('driverSelect').value);
+    const vehicleId = parseInt(document.getElementById('vehicleSelect').value);
+    const isPrimary = document.getElementById('isPrimary').checked;
+    const assignedFrom = document.getElementById('assignedFrom').value || null;
+    const assignedTo = document.getElementById('assignedTo').value || null;
+    const note = document.getElementById('assignmentNote').value || null;
+
+    const url = assignmentId ? `/assignments/${assignmentId}` : '/assignments';
+    const method = assignmentId ? 'PUT' : 'POST';
+
+    const response = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            driver_id: driverId,
+            vehicle_id: vehicleId,
+            assigned_from: assignedFrom,
+            assigned_to: assignedTo,
+            is_primary: isPrimary,
+            note: note
+        })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        alert(result.detail || 'Chyba pri priradeni');
+        return;
+    }
+
+    clearAssignmentForm();
+    await loadAssignments();
+}
+
+async function editAssignment(id, driverId, vehicleId, assignedFrom, assignedTo, isPrimary, note) {
+    console.log('editAssignment called', {id, driverId, vehicleId, assignedFrom, assignedTo, isPrimary, note});
+    // ensure selects are populated before setting values
+    const driverSelect = document.getElementById('driverSelect');
+    const vehicleSelect = document.getElementById('vehicleSelect');
+    if (driverSelect.options.length === 0 || vehicleSelect.options.length === 0) {
+        await loadAssignments();
+    }
+    document.getElementById('assignmentId').value = id;
+    driverSelect.value = String(driverId);
+    vehicleSelect.value = String(vehicleId);
+    console.log('driverSelect options count:', driverSelect.options.length, 'set value:', String(driverId), 'result:', driverSelect.value);
+    console.log('vehicleSelect options count:', vehicleSelect.options.length, 'set value:', String(vehicleId), 'result:', vehicleSelect.value);
+    document.getElementById('assignedFrom').value = assignedFrom || '';
+    document.getElementById('assignedTo').value = assignedTo || '';
+    document.getElementById('isPrimary').checked = !!isPrimary;
+    document.getElementById('assignmentNote').value = note || '';
+    document.getElementById('saveAssignmentBtn').textContent = 'Uložiť zmeny';
+    document.getElementById('cancelAssignmentBtn').style.display = '';
+    document.querySelector('[data-section="assignments"] .panel-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    console.log('editAssignment done');
+}
+
+function clearAssignmentForm() {
+    document.getElementById('assignmentId').value = '';
+    document.getElementById('assignedFrom').value = '';
+    document.getElementById('assignedTo').value = '';
+    document.getElementById('isPrimary').checked = false;
+    document.getElementById('assignmentNote').value = '';
+    document.getElementById('saveAssignmentBtn').textContent = 'Uložiť priradenie';
+    document.getElementById('cancelAssignmentBtn').style.display = 'none';
+}
+
+async function loadAssignments() {
+    const response = await fetch('/assignments');
+    const data = await response.json();
+
+    const driversResponse = await fetch('/drivers');
+    const drivers = await driversResponse.json();
+
+    const vehiclesResponse = await fetch('/vehicles');
+    const vehicles = await vehiclesResponse.json();
+
+    // naplnit selecty ak su prazdne (sekcia Priradenia otvorena priamo)
+    const driverSelect = document.getElementById('driverSelect');
+    if (driverSelect.options.length === 0) {
+        drivers.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.id;
+            opt.text = `${d.id} - ${d.first_name} ${d.last_name}`;
+            driverSelect.appendChild(opt);
+        });
+    }
+    const vehicleSelect = document.getElementById('vehicleSelect');
+    if (vehicleSelect.options.length === 0) {
+        vehicles.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v.id;
+            opt.text = `${v.license_plate} - ${v.brand} ${v.model}`;
+            vehicleSelect.appendChild(opt);
+        });
+    }
+
+    const list = document.getElementById('assignmentList');
+    list.innerHTML = '';
+
+    if (data.length === 0) {
+        renderEmptyState(list, 'Zatiaľ neexistujú žiadne priradenia.', 'li');
+    }
+
+    data.forEach(a => {
+        const driver = drivers.find(d => d.id === a.driver_id);
+        const vehicle = vehicles.find(v => v.id === a.vehicle_id);
+
+        const driverName = driver
+            ? `${driver.id} - ${driver.first_name} ${driver.last_name} - ${driver.email ?? 'bez emailu'}`
+            : `Driver ${a.driver_id}`;
+        const vehicleName = vehicle ? `${vehicle.license_plate} - ${vehicle.brand} ${vehicle.model}` : `Vehicle ${a.vehicle_id}`;
+
+        const li = document.createElement('li');
+        li.className = 'record-item';
+        li.innerHTML = `
+            <strong>${driverName} → ${vehicleName}${a.is_primary ? ' · HLAVNÉ' : ''}</strong>
+            <div class="record-meta">
+                <span>Od: ${a.assigned_from ?? 'nezadané'}</span>
+                <span>Do: ${a.assigned_to ?? 'aktívne'}</span>
+            </div>
+            <div class="record-actions">
+                <button type="button" class="edit-assignment-btn"
+                    data-id="${a.id}"
+                    data-driverid="${a.driver_id}"
+                    data-vehicleid="${a.vehicle_id}"
+                    data-from="${a.assigned_from ?? ''}"
+                    data-to="${a.assigned_to ?? ''}"
+                    data-primary="${a.is_primary}"
+                    data-note="${(a.note ?? '').replace(/"/g, '&quot;')}"
+                >Upraviť</button>
+                <button type="button" onclick="closeAssignment(${a.id})">Ukončiť</button>
+                <button class="button-warning" type="button" onclick="deleteAssignment(${a.id})">Odstrániť</button>
+            </div>
+        `;
+        list.appendChild(li);
+    });
+
+    document.querySelectorAll('.edit-assignment-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const d = btn.dataset;
+            editAssignment(d.id, d.driverid, d.vehicleid, d.from, d.to, d.primary === 'true', d.note);
+        });
+    });
+}
+
+async function saveTrip() {
+    const tripId = document.getElementById('tripId').value;
+    const driverId = Number.parseInt(document.getElementById('tripDriverSelect').value, 10);
+    const vehicleId = Number.parseInt(document.getElementById('tripVehicleSelect').value, 10);
+    const tripDate = document.getElementById('tripDate').value;
+    const updateKm = document.getElementById('tripUpdateKm').checked;
+    const startKm = document.getElementById('tripStartKm').value ? Number.parseInt(document.getElementById('tripStartKm').value, 10) : null;
+    const endKm = document.getElementById('tripEndKm').value ? Number.parseInt(document.getElementById('tripEndKm').value, 10) : null;
+    const distanceVal = document.getElementById('tripDistance').value;
+    let distanceKm = distanceVal ? Number.parseFloat(distanceVal) : null;
+    if (distanceKm === null && startKm !== null && endKm !== null) distanceKm = endKm - startKm;
+    const route = document.getElementById('tripRouteFrom').value + (document.getElementById('tripRouteTo').value ? ' - ' + document.getElementById('tripRouteTo').value : '');
+    const routeFrom = document.getElementById('tripRouteFrom').value;
+    const routeTo = document.getElementById('tripRouteTo').value;
+    const purpose = document.getElementById('tripPurpose').value;
+    const note = document.getElementById('tripNote').value;
+    const refuelIdVal = document.getElementById('tripRefuelSelect').value;
+
+    let url = '/trips';
+    let method = 'POST';
+
+    if (tripId) {
+        url = `/trips/${tripId}`;
+        method = 'PUT';
+    }
+
+    const response = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            driver_id: driverId,
+            vehicle_id: vehicleId,
+            trip_date: tripDate,
+            start_km: startKm,
+            end_km: endKm,
+            distance_km: distanceKm,
+            route: route || null,
+            route_from: routeFrom || null,
+            route_to: routeTo || null,
+            purpose: purpose || null,
+            note: note || null
+        })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        alert(result.detail || 'Chyba pri ukladaní jazdy');
+        return;
+    }
+
+    clearTripForm();
+    await loadTrips();
+
+    // ak bolo vybrate tankovanie, priradit ho k novoulezenej jazde
+    if (refuelIdVal) {
+        const newTripId = result.id;
+        await fetch(`/refuels/${refuelIdVal}/assign-trip?trip_id=${newTripId}`, { method: 'PATCH' });
+    }
+
+    // aktualizovat current_km vozidla
+    if (updateKm && !isNaN(endKm)) {
+        const vehResp = await fetch(`/vehicles/${vehicleId}`);
+        const veh = await vehResp.json();
+        if (vehResp.ok) {
+            await fetch(`/vehicles/${vehicleId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    license_plate: veh.license_plate,
+                    vin: veh.vin,
+                    brand: veh.brand,
+                    model: veh.model,
+                    year: veh.year,
+                    fuel_type: veh.fuel_type,
+                    current_km: endKm,
+                    note: veh.note
+                })
+            });
+        }
+    }
+}
+
+async function loadTrips() {
+    const [tripsResponse, driversResponse, vehiclesResponse, refuelsResponse] = await Promise.all([
+        fetch('/trips'),
+        fetch('/drivers'),
+        fetch('/vehicles'),
+        fetch('/refuels')
+    ]);
+    const trips = await tripsResponse.json();
+    const drivers = await driversResponse.json();
+    const vehicles = await vehiclesResponse.json();
+    const refuels = await refuelsResponse.json();
+
+    // naplnit select tankovaní vo formulári jazdy
+    const tripRefuelSelect = document.getElementById('tripRefuelSelect');
+    tripRefuelSelect.innerHTML = '<option value="">Bez tankovania</option>';
+    refuels.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r.id;
+        opt.dataset.date = r.refuel_date ?? '';
+        opt.text = `#${r.id} — ${r.refuel_date}${r.refuel_time ? ' ' + r.refuel_time : ''} — ${r.liters}L — ${r.station ?? ''}`;
+        tripRefuelSelect.appendChild(opt);
+    });
+
+    const tableBody = document.getElementById('tripTableBody');
+    tableBody.innerHTML = '';
+    setCount('tripsCount', trips.length);
+
+    if (trips.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="12"><div class="empty-state">Zatiaľ nie sú evidované žiadne jazdy.</div></td></tr>';
+        return;
+    }
+
+    trips.forEach(t => {
+        const driver = drivers.find(d => d.id === t.driver_id);
+        const vehicle = vehicles.find(v => v.id === t.vehicle_id);
+        const driverName = driver ? `${driver.first_name} ${driver.last_name}` : `Driver ${t.driver_id}`;
+        const vehicleName = vehicle ? `${vehicle.license_plate} - ${vehicle.brand} ${vehicle.model}` : `Vehicle ${t.vehicle_id}`;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${t.id}</td>
+            <td>${t.trip_date}</td>
+            <td>${driverName}</td>
+            <td>${vehicleName}</td>
+            <td>${t.start_km} - ${t.end_km}</td>
+            <td>${t.distance_km != null ? t.distance_km + ' km' : (t.end_km && t.start_km ? t.end_km - t.start_km + ' km' : '')}</td>
+            <td>${t.route_from ?? ''}</td>
+            <td>${t.route_to ?? ''}</td>
+            <td>${t.purpose ?? ''}</td>
+            <td>${t.note ?? ''}</td>
+            <td>
+                <button type="button" class="button-secondary open-refuel-modal-btn"
+                    data-tripid="${t.id}"
+                    data-tripdate="${t.trip_date}"
+                >Tankovanie</button>
+            </td>
+            <td>
+                <div class="table-actions">
+                <button type="button" class="edit-trip-btn"
+                    data-id="${t.id}"
+                    data-driverid="${t.driver_id}"
+                    data-vehicleid="${t.vehicle_id}"
+                    data-date="${t.trip_date ?? ''}"
+                    data-startkm="${t.start_km ?? ''}"
+                    data-endkm="${t.end_km ?? ''}"
+                    data-distancekm="${t.distance_km ?? ''}"
+                    data-routefrom="${t.route_from ?? ''}"
+                    data-routeto="${t.route_to ?? ''}"
+                    data-purpose="${t.purpose ?? ''}"
+                    data-note="${t.note ?? ''}"
+                >Upraviť</button>
+                <button class="button-warning" type="button" onclick="deleteTrip(${t.id})">Odstrániť</button>
+                </div>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+
+    document.querySelectorAll('.edit-trip-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const d = btn.dataset;
+            editTrip(d.id, d.driverid, d.vehicleid, d.date, d.startkm, d.endkm, d.distancekm !== '' ? d.distancekm : null, d.routefrom, d.routeto, d.purpose, d.note);
+        });
+    });
+
+    document.querySelectorAll('.open-refuel-modal-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            openRefuelModal(btn.dataset.tripid, btn.dataset.tripdate);
+        });
+    });
+}
+
+function calcTripDistance() {
+    const start = Number.parseInt(document.getElementById('tripStartKm').value, 10);
+    const end = Number.parseInt(document.getElementById('tripEndKm').value, 10);
+    const field = document.getElementById('tripDistance');
+    if (!isNaN(start) && !isNaN(end) && end >= start) {
+        field.value = end - start;
+    } else {
+        field.value = '';
+    }
+}
+
+function calcTripEndKm() {
+    const start = Number.parseInt(document.getElementById('tripStartKm').value, 10);
+    const dist = Number.parseFloat(document.getElementById('tripDistance').value);
+    if (!isNaN(start) && !isNaN(dist) && dist >= 0) {
+        document.getElementById('tripEndKm').value = start + dist;
+    }
+}
+
+function onTripDateChange(input) {
+    const today = new Date().toISOString().slice(0, 10);
+    document.getElementById('tripUpdateKm').checked = (input.value === today);
+}
+
+function onTripRefuelChange(select) {
+    const selected = select.options[select.selectedIndex];
+    const date = selected.dataset.date;
+    if (date) {
+        document.getElementById('tripDate').value = date;
+    }
+    // pre historicke tankovania odskrtnut update km
+    const today = new Date().toISOString().slice(0, 10);
+    document.getElementById('tripUpdateKm').checked = (date === today);
+}
+
+function editTrip(id, driverId, vehicleId, tripDate, startKm, endKm, distanceKm, routeFrom, routeTo, purpose, note) {
+    document.getElementById('tripId').value = id;
+    document.getElementById('tripDriverSelect').value = String(driverId);
+    document.getElementById('tripVehicleSelect').value = String(vehicleId);
+    document.getElementById('tripDate').value = tripDate || '';
+    document.getElementById('tripStartKm').value = startKm || '';
+    document.getElementById('tripEndKm').value = endKm || '';
+    document.getElementById('tripDistance').value = distanceKm != null ? distanceKm : (startKm && endKm ? endKm - startKm : '');
+    document.getElementById('tripRouteFrom').value = routeFrom || '';
+    document.getElementById('tripRouteTo').value = routeTo || '';
+    document.getElementById('tripPurpose').value = purpose || '';
+    document.getElementById('tripNote').value = note || '';
+}
+
+function clearTripForm() {
+    document.getElementById('tripId').value = '';
+    document.getElementById('tripDate').value = '';
+    document.getElementById('tripStartKm').value = '';
+    document.getElementById('tripEndKm').value = '';
+    document.getElementById('tripDistance').value = '';
+    document.getElementById('tripUpdateKm').checked = true;
+    document.getElementById('tripRouteFrom').value = '';
+    document.getElementById('tripRouteTo').value = '';
+    document.getElementById('tripPurpose').value = '';
+    document.getElementById('tripNote').value = '';
+    document.getElementById('tripRefuelSelect').value = '';
+}
+
+async function deleteTrip(tripId) {
+    const confirmed = confirm('Naozaj chceš odstrániť túto jazdu?');
+
+    if (!confirmed) {
+        return;
+    }
+
+    const response = await fetch(`/trips/${tripId}`, {
+        method: 'DELETE'
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+        alert(result.detail || 'Chyba pri odstraňovaní jazdy');
+        return;
+    }
+
+    if (document.getElementById('tripId').value === String(tripId)) {
+        clearTripForm();
+    }
+
+    await loadTrips();
+}
+
+function calcPricePerLiter() {
+    const liters = Number.parseFloat(document.getElementById('refuelLiters').value);
+    const totalCost = Number.parseFloat(document.getElementById('refuelTotalCost').value);
+    const field = document.getElementById('refuelPricePerLiter');
+    if (liters > 0 && totalCost > 0) {
+        field.value = (totalCost / liters).toFixed(3);
+    } else {
+        field.value = '';
+    }
+}
+
+async function saveRefuel() {
+    const refuelId = document.getElementById('refuelId').value;
+    const vehicleId = Number.parseInt(document.getElementById('refuelVehicleSelect').value, 10);
+    const driverValue = document.getElementById('refuelDriverSelect').value;
+    const refuelDate = document.getElementById('refuelDate').value;
+    const refuelTime = document.getElementById('refuelTime').value;
+    const liters = Number.parseFloat(document.getElementById('refuelLiters').value);
+    const totalCost = Number.parseFloat(document.getElementById('refuelTotalCost').value);
+    const pricePerLiterValue = document.getElementById('refuelPricePerLiter').value;
+    const odometerValue = document.getElementById('refuelOdometerKm').value;
+    const station = document.getElementById('refuelStation').value;
+    const fuelType = document.getElementById('refuelFuelType').value;
+    const note = document.getElementById('refuelNote').value;
+
+    let url = '/refuels';
+    let method = 'POST';
+
+    if (refuelId) {
+        url = `/refuels/${refuelId}`;
+        method = 'PUT';
+    }
+
+    const response = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            vehicle_id: vehicleId,
+            driver_id: driverValue ? Number.parseInt(driverValue, 10) : null,
+            refuel_date: refuelDate,
+            refuel_time: refuelTime || null,
+            liters: liters,
+            total_cost: totalCost,
+            price_per_liter: pricePerLiterValue ? Number.parseFloat(pricePerLiterValue) : null,
+            odometer_km: odometerValue ? Number.parseInt(odometerValue, 10) : null,
+            station: station || null,
+            fuel_type: fuelType || null,
+            note: note || null
+        })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        alert(result.detail || 'Chyba pri ukladaní tankovania');
+        return;
+    }
+
+    clearRefuelForm();
+    await loadRefuels();
+}
+
+async function loadRefuels() {
+    const refuelsResponse = await fetch('/refuels');
+    const refuels = await refuelsResponse.json();
+
+    const driversResponse = await fetch('/drivers');
+    const drivers = await driversResponse.json();
+
+    const vehiclesResponse = await fetch('/vehicles');
+    const vehicles = await vehiclesResponse.json();
+
+    const tableBody = document.getElementById('refuelTableBody');
+    tableBody.innerHTML = '';
+    setCount('refuelsCount', refuels.length);
+
+    if (refuels.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="12"><div class="empty-state">Zatiaľ nie sú evidované žiadne tankovania.</div></td></tr>';
+        return;
+    }
+
+    refuels.forEach(r => {
+        const driver = drivers.find(d => d.id === r.driver_id);
+        const vehicle = vehicles.find(v => v.id === r.vehicle_id);
+        const driverName = driver ? `${driver.first_name} ${driver.last_name}` : '-';
+        const vehicleName = vehicle ? `${vehicle.license_plate} - ${vehicle.brand} ${vehicle.model}` : `Vehicle ${r.vehicle_id}`;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${r.id}</td>
+            <td>${r.refuel_date}</td>
+            <td>${r.refuel_time ?? ''}</td>
+            <td>${vehicleName}</td>
+            <td>${driverName}</td>
+            <td>${r.liters}</td>
+            <td>${r.total_cost}</td>
+            <td>${r.price_per_liter ?? ''}</td>
+            <td>${r.odometer_km ?? ''}</td>
+            <td>${r.station ?? ''}</td>
+            <td>${r.fuel_type ?? ''}</td>
+            <td>${r.note ?? ''}</td>
+            <td>
+                <div class="table-actions">
+                <button type="button" class="edit-refuel-btn"
+                    data-id="${r.id}"
+                    data-vehicleid="${r.vehicle_id}"
+                    data-driverid="${r.driver_id ?? ''}"
+                    data-date="${r.refuel_date ?? ''}"
+                    data-time="${r.refuel_time ?? ''}"
+                    data-liters="${r.liters ?? ''}"
+                    data-totalcost="${r.total_cost ?? ''}"
+                    data-priceperliter="${r.price_per_liter ?? ''}"
+                    data-odometer="${r.odometer_km ?? ''}"
+                    data-station="${r.station ?? ''}"
+                    data-fueltype="${r.fuel_type ?? ''}"
+                    data-note="${r.note ?? ''}"
+                >Upraviť</button>
+                <button type="button" class="button-secondary dup-refuel-btn"
+                    data-vehicleid="${r.vehicle_id}"
+                    data-driverid="${r.driver_id ?? ''}"
+                    data-date="${r.refuel_date ?? ''}"
+                    data-time="${r.refuel_time ?? ''}"
+                    data-liters="${r.liters ?? ''}"
+                    data-totalcost="${r.total_cost ?? ''}"
+                    data-priceperliter="${r.price_per_liter ?? ''}"
+                    data-odometer="${r.odometer_km ?? ''}"
+                    data-station="${r.station ?? ''}"
+                    data-fueltype="${r.fuel_type ?? ''}"
+                    data-note="${r.note ?? ''}"
+                >Duplikovať</button>
+                <button class="button-warning" type="button" onclick="deleteRefuel(${r.id})">Odstrániť</button>
+                </div>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+
+    document.querySelectorAll('.edit-refuel-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const d = btn.dataset;
+            editRefuel(d.id, d.vehicleid, d.driverid || null, d.date, d.time || '', d.liters, d.totalcost, d.priceperliter || null, d.odometer || null, d.station, d.note);
+        });
+    });
+
+    document.querySelectorAll('.dup-refuel-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const d = btn.dataset;
+            // rovnake ako editRefuel ale bez ID -> ulozi ako novy zaznam
+            editRefuel('', d.vehicleid, d.driverid || null, d.date, d.time || '', d.liters, d.totalcost, d.priceperliter || null, d.odometer || null, d.station, d.note);
+        });
+    });
+
+    // naplnenie datalist pre stanice
+    const stations = [...new Set(refuels.map(r => r.station).filter(Boolean))];
+    const datalist = document.getElementById('stationSuggestions');
+    datalist.innerHTML = '';
+    stations.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        datalist.appendChild(opt);
+    });
+
+    // naplnenie datalist pre druhy paliva (fixne + zo zaznamov)
+    const fixedFuels = ['NAFTA', 'BENZIN', 'ELEKTRINA', 'AdBLUE'];
+    const extraFuels = [...new Set(refuels.map(r => r.fuel_type).filter(Boolean))].filter(f => !fixedFuels.includes(f));
+    const fuelDatalist = document.getElementById('fuelTypeSuggestions');
+    fuelDatalist.innerHTML = '';
+    [...fixedFuels, ...extraFuels].forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = f;
+        fuelDatalist.appendChild(opt);
+    });
+}
+
+function editRefuel(id, vehicleId, driverId, refuelDate, refuelTime, liters, totalCost, pricePerLiter, odometerKm, station, fuelType, note) {
+    document.getElementById('refuelId').value = id;
+    document.getElementById('refuelVehicleSelect').value = String(vehicleId);
+    document.getElementById('refuelDriverSelect').value = driverId === null ? '' : String(driverId);
+    document.getElementById('refuelDate').value = refuelDate || '';
+    document.getElementById('refuelTime').value = refuelTime || '';
+    document.getElementById('refuelLiters').value = liters || '';
+    document.getElementById('refuelTotalCost').value = totalCost || '';
+    document.getElementById('refuelPricePerLiter').value = pricePerLiter === null ? '' : String(pricePerLiter);
+    document.getElementById('refuelOdometerKm').value = odometerKm === null ? '' : String(odometerKm);
+    document.getElementById('refuelStation').value = station || '';
+    document.getElementById('refuelFuelType').value = fuelType || '';
+    document.getElementById('refuelNote').value = note || '';
+}
+
+function clearRefuelForm() {
+    document.getElementById('refuelId').value = '';
+    document.getElementById('refuelDate').value = '';
+    document.getElementById('refuelTime').value = '';
+    document.getElementById('refuelLiters').value = '';
+    document.getElementById('refuelTotalCost').value = '';
+    document.getElementById('refuelPricePerLiter').value = '';
+    document.getElementById('refuelOdometerKm').value = '';
+    document.getElementById('refuelStation').value = '';
+    document.getElementById('refuelFuelType').value = '';
+    document.getElementById('refuelNote').value = '';
+    document.getElementById('refuelDriverSelect').value = '';
+}
+
+async function deleteRefuel(refuelId) {
+    const confirmed = confirm('Naozaj chceš odstrániť toto tankovanie?');
+
+    if (!confirmed) {
+        return;
+    }
+
+    const response = await fetch(`/refuels/${refuelId}`, {
+        method: 'DELETE'
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+        alert(result.detail || 'Chyba pri odstraňovaní tankovania');
+        return;
+    }
+
+    if (document.getElementById('refuelId').value === String(refuelId)) {
+        clearRefuelForm();
+    }
+
+    await loadRefuels();
+}
+
+async function closeAssignment(assignmentId) {
+    const today = new Date().toISOString().slice(0, 10);
+    const closeDate = prompt('Dátum ukončenia (YYYY-MM-DD):', today);
+
+    if (!closeDate) {
+        return;
+    }
+
+    const assignmentResponse = await fetch(`/assignments/${assignmentId}`);
+    const assignment = await assignmentResponse.json();
+
+    if (!assignmentResponse.ok) {
+        alert(assignment.detail || 'Priradenie sa nepodarilo načítať');
+        return;
+    }
+
+    if (assignment.assigned_to) {
+        alert('Toto priradenie je už ukončené.');
+        return;
+    }
+
+    const response = await fetch(`/assignments/${assignmentId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            driver_id: assignment.driver_id,
+            vehicle_id: assignment.vehicle_id,
+            assigned_from: assignment.assigned_from,
+            assigned_to: closeDate,
+            is_primary: assignment.is_primary,
+            note: assignment.note
+        })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        alert(result.detail || 'Chyba pri ukončení priradenia');
+        return;
+    }
+
+    await loadAssignments();
+}
+
+async function deleteAssignment(assignmentId) {
+    const confirmed = confirm('Naozaj chceš odstrániť toto priradenie?');
+
+    if (!confirmed) {
+        return;
+    }
+
+    const response = await fetch(`/assignments/${assignmentId}`, {
+        method: 'DELETE'
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        alert(result.detail || 'Chyba pri odstraňovaní priradenia');
+        return;
+    }
+
+    await loadAssignments();
+}
+
+async function initPage() {
+    // load current user info
+    try {
+        const meResp = await fetch('/auth/me');
+        if (!meResp.ok) {
+            const d = await meResp.json().catch(() => ({}));
+            if (d.detail === 'EXPIRED') {
+                window.location.href = '/login?expired=1';
+            } else {
+                window.location.href = '/login';
+            }
+            return;
+        }
+        const me = await meResp.json();
+        const el = document.getElementById('loggedInAs');
+        if (el) el.textContent = `Prihlásený: ${me.username}${me.is_admin ? ' (admin)' : ''}`;
+    } catch (e) {
+        window.location.href = '/login';
+        return;
+    }
+    await loadDashboardCounts();
+    showSection('vehicles');
+}
+
+async function doLogout() {
+    await fetch('/auth/logout', { method: 'POST' });
+    window.location.href = '/login';
+}
+
+let _currentUserIsAdmin = false;
+
+async function loadNastavenia() {
+    const meResp = await fetch('/auth/me');
+    if (!meResp.ok) return;
+    const me = await meResp.json();
+    _currentUserIsAdmin = me.is_admin;
+
+    document.getElementById('nastavenieAdminOnly').style.display = me.is_admin ? '' : 'none';
+    document.getElementById('nastavenieNonAdmin').style.display = me.is_admin ? 'none' : '';
+
+    if (!me.is_admin) {
+        // show own subscription info
+        const today = new Date().toISOString().slice(0, 10);
+        const trialExp = me.trial_expires_at;
+        const subExp = me.subscription_expires_at;
+        const trialOk = trialExp && trialExp >= today;
+        const subOk = subExp && subExp >= today;
+        let statusHtml = '';
+        if (subOk) {
+            statusHtml = `<div style="background:#d1fae5;color:#065f46;border-radius:10px;padding:14px 18px;">
+                ✅ <strong>Platené predplatné</strong> do <strong>${subExp}</strong>
+                ${me.subscription_amount ? ` · zaplatená suma: ${me.subscription_amount} €` : ''}
+            </div>`;
+        } else if (trialOk) {
+            statusHtml = `<div style="background:#fef9c3;color:#713f12;border-radius:10px;padding:14px 18px;">
+                ⏳ <strong>Skúšobná doba</strong> do <strong>${trialExp}</strong> · Pre pokračovanie kontaktuj admina.
+            </div>`;
+        } else {
+            statusHtml = `<div style="background:#fee2e2;color:#991b1b;border-radius:10px;padding:14px 18px;">
+                🔴 <strong>Prístup vypršal.</strong> Kontaktuj administrátora pre obnovenie.
+            </div>`;
+        }
+        document.getElementById('nastavenieNonAdmin').innerHTML = statusHtml;
+        document.getElementById('usersTableBody').innerHTML = '<tr><td colspan="7" class="empty-state">Prístup len pre admina</td></tr>';
+        return;
+    }
+
+    const resp = await fetch('/auth/users');
+    if (!resp.ok) return;
+    const users = await resp.json();
+    const today = new Date().toISOString().slice(0, 10);
+
+    const body = document.getElementById('usersTableBody');
+    body.innerHTML = users.map(u => {
+        const trialOk = u.trial_expires_at && u.trial_expires_at >= today;
+        const subOk = u.subscription_expires_at && u.subscription_expires_at >= today;
+        const accessStatus = u.is_admin ? '👑 Admin' : (subOk ? '✅ Predplatné' : (trialOk ? '⏳ Trial' : '🔴 Vypršalo'));
+        return `<tr>
+            <td>${u.id}</td>
+            <td>${u.username}</td>
+            <td>${u.is_admin ? '👑 Admin' : 'Používateľ'}</td>
+            <td>${accessStatus}</td>
+            <td>${u.trial_expires_at ?? '—'}</td>
+            <td>${u.subscription_expires_at ?? '—'}${u.subscription_amount ? ` (${u.subscription_amount} €)` : ''}</td>
+            <td style="white-space:nowrap">
+                <button type="button" onclick="editSubscription(${u.id}, '${u.username}', '${u.trial_expires_at ?? ''}', '${u.subscription_expires_at ?? ''}', ${u.subscription_amount ?? 0})">Predplatné</button>
+                <button type="button" onclick="toggleUserActive(${u.id}, ${u.is_active})" style="margin-left:4px">${u.is_active ? 'Deaktiv.' : 'Aktivovať'}</button>
+                <button type="button" onclick="resetPassword(${u.id}, '${u.username}')" style="margin-left:4px">Heslo</button>
+            </td>
+        </tr>`;
+    }).join('') || '<tr><td colspan="7" class="empty-state">Žiadni používatelia</td></tr>';
+}
+
+async function createUser() {
+    const username = document.getElementById('newUsername').value.trim();
+    const password = document.getElementById('newPassword').value;
+    const isAdmin = document.getElementById('newIsAdmin').checked;
+
+    if (!username || !password) { alert('Vyplň meno aj heslo'); return; }
+    if (password.length < 6) { alert('Heslo musí mať aspoň 6 znakov'); return; }
+
+    const resp = await fetch('/auth/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, is_admin: isAdmin })
+    });
+    const result = await resp.json();
+    if (!resp.ok) { alert(result.detail || 'Chyba'); return; }
+
+    document.getElementById('newUsername').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('newIsAdmin').checked = false;
+    alert(`Účet "${result.username}" bol vytvorený.`);
+    await loadNastavenia();
+}
+
+async function toggleUserActive(userId, currentlyActive) {
+    const resp = await fetch(`/auth/users/${userId}/active`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_active: !currentlyActive })
+    });
+    if (!resp.ok) { const d = await resp.json(); alert(d.detail || 'Chyba'); return; }
+    await loadNastavenia();
+}
+
+async function resetPassword(userId, username) {
+    const newPass = prompt(`Nové heslo pre "${username}" (min. 6 znakov):`);
+    if (!newPass) return;
+    if (newPass.length < 6) { alert('Heslo musí mať aspoň 6 znakov'); return; }
+    const resp = await fetch(`/auth/users/${userId}/password`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: newPass })
+    });
+    if (!resp.ok) { const d = await resp.json(); alert(d.detail || 'Chyba'); return; }
+    alert('Heslo bolo zmenené.');
+}
+
+async function editSubscription(userId, username, trialExp, subExp, subAmount) {
+    const newTrial = prompt(`"${username}" – Skúšobná doba do (RRRR-MM-DD):`, trialExp || '');
+    if (newTrial === null) return;
+    const newSub = prompt(`"${username}" – Predplatné do (RRRR-MM-DD, nechaj prázdne ak nie je):`, subExp || '');
+    if (newSub === null) return;
+    const newAmount = prompt(`"${username}" – Suma predplatného (€, nechaj prázdne):`, subAmount > 0 ? subAmount : '');
+    if (newAmount === null) return;
+
+    const body = {};
+    if (newTrial) body.trial_expires_at = newTrial;
+    if (newSub) body.subscription_expires_at = newSub;
+    if (newAmount) body.subscription_amount = parseFloat(newAmount);
+
+    const resp = await fetch(`/auth/users/${userId}/subscription`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    });
+    if (!resp.ok) { const d = await resp.json(); alert(d.detail || 'Chyba'); return; }
+    await loadNastavenia();
+}
+
+async function loadPrehlady() {
+    const [refuels, trips, drivers, vehicles] = await Promise.all([
+        fetch('/refuels').then(r => r.json()),
+        fetch('/trips').then(r => r.json()),
+        fetch('/drivers').then(r => r.json()),
+        fetch('/vehicles').then(r => r.json()),
+    ]);
+
+    // --- KPI karty ---
+    const totalRefuelCost = refuels.reduce((s, r) => s + (r.total_cost || 0), 0);
+    const totalLiters = refuels.reduce((s, r) => s + (r.liters || 0), 0);
+    const totalKm = trips.reduce((s, t) => s + (t.distance_km != null ? t.distance_km : (t.end_km && t.start_km ? t.end_km - t.start_km : 0)), 0);
+
+    const kpis = [
+        { label: 'Počet vozidiel', value: vehicles.length, icon: '🚚' },
+        { label: 'Počet vodičov', value: drivers.length, icon: '👤' },
+        { label: 'Jazdy celkom', value: trips.length, icon: '🛣' },
+        { label: 'Najazdené km', value: totalKm.toFixed(1) + ' km', icon: '📍' },
+        { label: 'Tankovania', value: refuels.length, icon: '⛽' },
+        { label: 'Litrov celkom', value: totalLiters.toFixed(1) + ' l', icon: '🪣' },
+        { label: 'Náklady za palivo', value: totalRefuelCost.toFixed(2) + ' €', icon: '💶' },
+    ];
+
+    const grid = document.getElementById('prehladyGrid');
+    grid.innerHTML = kpis.map(k => `
+        <div style="background:#f4f0e8; border-radius:14px; padding:18px 22px;">
+            <div style="font-size:28px; margin-bottom:6px;">${k.icon}</div>
+            <div style="font-size:22px; font-weight:700; color:#1f2933;">${k.value}</div>
+            <div style="font-size:13px; color:#6b7280; margin-top:2px;">${k.label}</div>
+        </div>
+    `).join('');
+
+    // --- Náklady podľa vozidla ---
+    const byVehicle = {};
+    refuels.forEach(r => {
+        if (!byVehicle[r.vehicle_id]) byVehicle[r.vehicle_id] = { liters: 0, cost: 0, count: 0 };
+        byVehicle[r.vehicle_id].liters += r.liters || 0;
+        byVehicle[r.vehicle_id].cost += r.total_cost || 0;
+        byVehicle[r.vehicle_id].count++;
+    });
+    const refuelBody = document.getElementById('prehladyRefuelBody');
+    refuelBody.innerHTML = Object.entries(byVehicle).map(([vid, d]) => {
+        const v = vehicles.find(x => x.id === parseInt(vid));
+        const name = v ? `${v.license_plate} - ${v.brand} ${v.model}` : `#${vid}`;
+        const avgPrice = d.liters > 0 ? (d.cost / d.liters).toFixed(3) : '-';
+        return `<tr><td>${name}</td><td>${d.count}</td><td>${d.liters.toFixed(1)}</td><td>${d.cost.toFixed(2)}</td><td>${avgPrice}</td></tr>`;
+    }).join('') || '<tr><td colspan="5" class="empty-state">Žiadne dáta</td></tr>';
+
+    // --- Jazdy podľa vodiča ---
+    const byDriver = {};
+    trips.forEach(t => {
+        if (!byDriver[t.driver_id]) byDriver[t.driver_id] = { count: 0, km: 0 };
+        byDriver[t.driver_id].count++;
+        byDriver[t.driver_id].km += t.distance_km != null ? t.distance_km : (t.end_km && t.start_km ? t.end_km - t.start_km : 0);
+    });
+    const tripsBody = document.getElementById('prehladyTripsBody');
+    tripsBody.innerHTML = Object.entries(byDriver).map(([did, d]) => {
+        const dr = drivers.find(x => x.id === parseInt(did));
+        const name = dr ? `${dr.first_name} ${dr.last_name}` : `#${did}`;
+        return `<tr><td>${name}</td><td>${d.count}</td><td>${d.km.toFixed(1)} km</td></tr>`;
+    }).join('') || '<tr><td colspan="3" class="empty-state">Žiadne dáta</td></tr>';
+}
+
+let _refuelModalTripId = null;
+
+async function openRefuelModal(tripId, tripDate) {
+    _refuelModalTripId = tripId;
+    document.getElementById('refuelModalTitle').textContent = `Tankovania k jazde #${tripId}`;
+    document.getElementById('refuelModalSubtitle').textContent = `D\u00e1tum jazdy: ${tripDate} \u2014 zobraten\u00e9 s\u00fa tankovania s rovnak\u00fdm d\u00e1tumom.`;
+
+    const modal = document.getElementById('refuelModal');
+    modal.style.display = 'flex';
+
+    const list = document.getElementById('refuelModalList');
+    list.innerHTML = '<li style="color:#6b7280">Na\u010d\u00edt\u00e1vam...</li>';
+
+    const [refuelsResp, allRefuelsResp] = await Promise.all([
+        fetch(`/refuels/by-date/${tripDate}`),
+        fetch('/vehicles')
+    ]);
+    const refuels = await refuelsResp.json();
+    const vehicles = await allRefuelsResp.json();
+
+    list.innerHTML = '';
+
+    if (!Array.isArray(refuels) || refuels.length === 0) {
+        list.innerHTML = '<li class="empty-state">Pre tento d\u00e1tum nie s\u00fa \u017eiadne tankovania.</li>';
+        return;
+    }
+
+    refuels.forEach(r => {
+        const li = document.createElement('li');
+        li.className = 'record-item';
+        const assigned = r.trip_id === Number(tripId);
+        li.innerHTML = `
+            <strong>#${r.id} \u2014 ${r.liters}L \u2014 ${r.total_cost}\u20ac \u2014 ${r.station ?? 'neznama stanica'}</strong>
+            <div class="record-meta">
+                <span>Vozidlo ID: ${r.vehicle_id}</span>
+                <span>Vodi\u010d ID: ${r.driver_id ?? '\u2014'}</span>
+                <span>Stav km: ${r.odometer_km ?? '\u2014'}</span>
+                <span>Priraden\u00e9 k jazde: ${r.trip_id ? '#' + r.trip_id : 'nie'}</span>
+            </div>
+            <div class="record-actions">
+                ${assigned
+                    ? `<button type="button" class="button-warning" onclick="assignRefuelToTrip(${r.id}, null)">Zru\u0161i\u0165 priradenie</button>`
+                    : `<button type="button" onclick="assignRefuelToTrip(${r.id}, ${tripId})">Priradi\u0165 k tejto jazde</button>`
+                }
+            </div>
+        `;
+        list.appendChild(li);
+    });
+}
+
+function closeRefuelModal() {
+    document.getElementById('refuelModal').style.display = 'none';
+    _refuelModalTripId = null;
+}
+
+async function assignRefuelToTrip(refuelId, tripId) {
+    const url = tripId !== null
+        ? `/refuels/${refuelId}/assign-trip?trip_id=${tripId}`
+        : `/refuels/${refuelId}/assign-trip`;
+
+    const response = await fetch(url, { method: 'PATCH' });
+    if (!response.ok) {
+        const err = await response.json();
+        alert(err.detail || 'Chyba pri priradení');
+        return;
+    }
+
+    // reload modal content
+    const modal = document.getElementById('refuelModal');
+    if (modal.style.display === 'flex' && _refuelModalTripId) {
+        const titleText = document.getElementById('refuelModalSubtitle').textContent;
+        const dateMatch = titleText.match(/\d{4}-\d{2}-\d{2}/);
+        if (dateMatch) await openRefuelModal(_refuelModalTripId, dateMatch[0]);
+    }
+}
+
+initPage();
+</script>
+
+</body>
+</html>

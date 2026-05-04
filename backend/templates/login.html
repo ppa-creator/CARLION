@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CARLION – Prihlásenie</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f0ebe3;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            background: #fffdf8;
+            border-radius: 24px;
+            padding: 48px 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1f2933;
+            letter-spacing: -1px;
+            margin-bottom: 6px;
+        }
+        .subtitle {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 36px;
+        }
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #d1cfc9;
+            border-radius: 10px;
+            font-size: 15px;
+            background: #faf9f7;
+            outline: none;
+            transition: border-color 0.15s;
+            margin-bottom: 18px;
+        }
+        input:focus { border-color: #c9a84c; }
+        button[type="submit"] {
+            width: 100%;
+            padding: 13px;
+            background: #1f2933;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+            margin-top: 4px;
+        }
+        button[type="submit"]:hover { background: #374151; }
+        #errorMsg {
+            color: #dc2626;
+            font-size: 13px;
+            margin-top: 14px;
+            text-align: center;
+            min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="logo">🚚 CARLION</div>
+        <div class="subtitle">Správa vozového parku – prihláste sa</div>
+        <form id="loginForm" onsubmit="doLogin(event)">
+            <label for="username">Používateľské meno</label>
+            <input type="text" id="username" autocomplete="username" required>
+            <label for="password">Heslo</label>
+            <input type="password" id="password" autocomplete="current-password" required>
+            <button type="submit" id="loginBtn">Prihlásiť sa</button>
+        </form>
+        <div id="errorMsg"></div>
+        <div class="login-link" style="text-align:center; margin-top:20px; font-size:13px; color:#6b7280;">
+            Nemáš účet? <a href="/register" style="color:#1f2933; font-weight:600;">Registrovať sa zadarmo</a>
+        </div>
+    </div>
+
+    <script>
+        // show expired notice if redirected
+        if (new URLSearchParams(location.search).get('expired')) {
+            document.getElementById('errorMsg').innerHTML =
+                '⏰ Skúšobná doba alebo predplatné vypršalo.<br>Kontaktuj administrátora pre obnovenie prístupu.';
+        }
+
+        async function doLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            const err = document.getElementById('errorMsg');
+            btn.disabled = true;
+            btn.textContent = 'Prihlasujem...';
+            err.textContent = '';
+
+            const resp = await fetch('/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: document.getElementById('username').value,
+                    password: document.getElementById('password').value,
+                })
+            });
+
+            if (resp.ok) {
+                window.location.href = '/ui';
+            } else {
+                const data = await resp.json();
+                if (data.detail === 'EXPIRED') {
+                    err.innerHTML = 'Skúšobná doba alebo predplatné vypršalo.<br>Kontaktuj administrátora pre obnovenie prístupu.';
+                } else {
+                    err.textContent = data.detail || 'Prihlásenie zlyhalo';
+                }
+                btn.disabled = false;
+                btn.textContent = 'Prihlásiť sa';
+            }
+        }
+    </script>
+</body>
+</html>

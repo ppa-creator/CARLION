@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, Date
+from sqlalchemy import Column, Integer, String, Text, Date, Boolean
 from backend.db.database import Base
 
 
@@ -13,3 +13,4 @@ class Driver(Base):
     license_number = Column(String(100), nullable=True)
     license_valid_until = Column(Date, nullable=True)
     note = Column(Text, nullable=True)
+    is_active = Column(Boolean, default=True, nullable=False)
