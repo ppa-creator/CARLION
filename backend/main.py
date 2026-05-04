@@ -94,15 +94,11 @@ def ui(request: Request):
 
 @app.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):
-    if request.session.get("user_id"):
-        return RedirectResponse(url="/ui")
     return templates.TemplateResponse(request=request, name="login.html", context={})
 
 
 @app.get("/register", response_class=HTMLResponse)
 def register_page(request: Request):
-    if request.session.get("user_id"):
-        return RedirectResponse(url="/ui")
     return templates.TemplateResponse(request=request, name="register.html", context={})
 
 
