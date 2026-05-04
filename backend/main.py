@@ -3,6 +3,7 @@ import os
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -69,6 +70,7 @@ ROOT_PATH = os.environ.get("ROOT_PATH", "")
 app = FastAPI(title="CARLION API", root_path=ROOT_PATH)
 
 app.add_middleware(SessionMiddleware, secret_key=os.environ.get("SESSION_SECRET", "carlion-secret-change-in-prod-2026"), max_age=86400)
+app.mount("/static", StaticFiles(directory="backend/static"), name="static")
 
 _seed_admin()
 
