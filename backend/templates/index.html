@@ -451,6 +451,97 @@
             }
         }
 
+        /* Mobile home dashboard */
+        .mobile-home-panel {
+            display: none;
+        }
+
+        .home-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            padding-top: 8px;
+        }
+
+        .home-card {
+            background: rgba(255,253,248,0.95);
+            border: 1px solid rgba(217,207,194,0.85);
+            border-radius: 20px;
+            padding: 22px 16px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 4px 16px rgba(55,45,34,0.07);
+            border: none;
+            color: var(--ink);
+            font-family: inherit;
+        }
+
+        .home-card:active {
+            transform: scale(0.97);
+        }
+
+        .home-card-icon {
+            font-size: 32px;
+            line-height: 1;
+        }
+
+        .home-card-title {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .home-card-sub {
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.3;
+        }
+
+        .home-card-count {
+            margin-top: 4px;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        /* Section back button (mobile) */
+        .section-back-btn {
+            display: none;
+        }
+
+        @media (max-width: 920px) {
+            .mobile-home-panel.active {
+                display: block;
+            }
+            body.in-home .hero,
+            body.in-home .stats-grid,
+            body.in-home #sectionFocus,
+            body.in-home .content-panel {
+                display: none !important;
+            }
+            body:not(.in-home) .mobile-home-panel {
+                display: none !important;
+            }
+            .section-back-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                background: #e7dfd4;
+                color: var(--ink);
+                border: none;
+                border-radius: 999px;
+                padding: 8px 16px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                margin-bottom: 14px;
+            }
+        }
+
         @media (max-width: 640px) {
             .main-content {
                 padding: 14px 12px 80px;
@@ -629,6 +720,58 @@
     </aside>
 
     <main class="main-content">
+
+        <!-- Mobile home dashboard -->
+        <div class="mobile-home-panel active">
+            <div style="padding: 8px 0 16px; font-size:13px; color:var(--muted);">Vitaj v CARLION — vyber sekciu</div>
+            <div class="home-cards-grid">
+                <button class="home-card" onclick="goSection('vehicles')">
+                    <span class="home-card-icon">🚚</span>
+                    <span class="home-card-title">Vozidlá</span>
+                    <span class="home-card-sub">Park, servisné údaje, km</span>
+                    <span class="home-card-count" id="homeVehiclesCount">0</span>
+                </button>
+                <button class="home-card" onclick="goSection('drivers')">
+                    <span class="home-card-icon">👤</span>
+                    <span class="home-card-title">Vodiči</span>
+                    <span class="home-card-sub">Kontakty, vodičáky, stav</span>
+                    <span class="home-card-count" id="homeDriversCount">0</span>
+                </button>
+                <button class="home-card" onclick="goSection('assignments')">
+                    <span class="home-card-icon">🔗</span>
+                    <span class="home-card-title">Priradenia</span>
+                    <span class="home-card-sub">Kto jazdí na čom</span>
+                    <span class="home-card-count" id="homeAssignmentsCount">—</span>
+                </button>
+                <button class="home-card" onclick="goSection('trips')">
+                    <span class="home-card-icon">🛣</span>
+                    <span class="home-card-title">Jazdy</span>
+                    <span class="home-card-sub">Trasy a kilometre</span>
+                    <span class="home-card-count" id="homeTripsCount">0</span>
+                </button>
+                <button class="home-card" onclick="goSection('refuels')">
+                    <span class="home-card-icon">⛽</span>
+                    <span class="home-card-title">Tankovania</span>
+                    <span class="home-card-sub">Náklady a spotreba</span>
+                    <span class="home-card-count" id="homeRefuelsCount">0</span>
+                </button>
+                <button class="home-card" onclick="goSection('prehlady')">
+                    <span class="home-card-icon">📊</span>
+                    <span class="home-card-title">Prehľady</span>
+                    <span class="home-card-sub">Grafy a štatistiky</span>
+                    <span class="home-card-count">→</span>
+                </button>
+                <button class="home-card" onclick="goSection('nastavenia')">
+                    <span class="home-card-icon">⚙️</span>
+                    <span class="home-card-title">Nastavenia</span>
+                    <span class="home-card-sub">Používatelia a prístupy</span>
+                    <span class="home-card-count">→</span>
+                </button>
+            </div>
+        </div>
+
+        <button class="section-back-btn" id="sectionBackBtn" onclick="goHome()">← Domov</button>
+
         <section class="hero">
             <div class="hero-card">
                 <small>Operatíva vozového parku</small>
@@ -982,11 +1125,11 @@
 
 <!-- Bottom navigation bar (mobile) -->
 <nav class="bottom-nav" id="bottomNav">
-    <button class="bottom-nav-btn active" data-section="vehicles" onclick="showSection('vehicles', this, true)">
-        <span class="bn-icon">🚚</span><span>Vozidlá</span>
+    <button class="bottom-nav-btn active" data-section="home" onclick="goHome()">
+        <span class="bn-icon">🏠</span><span>Domov</span>
     </button>
-    <button class="bottom-nav-btn" data-section="drivers" onclick="showSection('drivers', this, true)">
-        <span class="bn-icon">👤</span><span>Vodiči</span>
+    <button class="bottom-nav-btn" data-section="vehicles" onclick="showSection('vehicles', this, true)">
+        <span class="bn-icon">🚚</span><span>Vozidlá</span>
     </button>
     <button class="bottom-nav-btn" data-section="trips" onclick="showSection('trips', this, true)">
         <span class="bn-icon">🛣</span><span>Jazdy</span>
@@ -1096,7 +1239,48 @@ async function loadSectionData(sectionName) {
     }
 }
 
+function goHome() {
+    document.body.classList.add('in-home');
+    document.querySelectorAll('.mobile-home-panel').forEach(p => p.classList.add('active'));
+    document.getElementById('sectionBackBtn').style.display = 'none';
+    // update bottom nav
+    document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.toggle('active', b.dataset.section === 'home'));
+    // update sidebar nav
+    document.querySelectorAll('.nav-button').forEach(b => b.classList.remove('active'));
+    closeSidebar();
+    // refresh home counts
+    refreshHomeCounts();
+}
+
+function goSection(sectionName) {
+    showSection(sectionName, null, true);
+}
+
+async function refreshHomeCounts() {
+    try {
+        const [v, d, t, r] = await Promise.all([
+            fetch('/vehicles').then(r => r.json()),
+            fetch('/drivers').then(r => r.json()),
+            fetch('/trips').then(r => r.json()),
+            fetch('/refuels').then(r => r.json()),
+        ]);
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        set('homeVehiclesCount', Array.isArray(v) ? v.length : 0);
+        set('homeDriversCount', Array.isArray(d) ? d.length : 0);
+        set('homeTripsCount', Array.isArray(t) ? t.length : 0);
+        set('homeRefuelsCount', Array.isArray(r) ? r.length : 0);
+    } catch(e) {}
+}
+
 function showSection(sectionName, triggerButton = null, fromBottomNav = false) {
+    // exit home state
+    document.body.classList.remove('in-home');
+    document.querySelectorAll('.mobile-home-panel').forEach(p => p.classList.remove('active'));
+    if (window.innerWidth <= 920) {
+        const backBtn = document.getElementById('sectionBackBtn');
+        if (backBtn) backBtn.style.display = 'inline-flex';
+    }
+
     document.querySelectorAll('.content-panel').forEach(panel => {
         panel.classList.toggle('active', panel.dataset.section === sectionName);
     });
@@ -2294,7 +2478,11 @@ async function initPage() {
         return;
     }
     await loadDashboardCounts();
-    showSection('vehicles');
+    if (window.innerWidth <= 920) {
+        goHome();
+    } else {
+        showSection('vehicles');
+    }
 }
 
 async function doLogout() {
