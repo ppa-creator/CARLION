@@ -28,9 +28,36 @@ def _seed_admin():
     from backend.db.database import SessionLocal
     db = SessionLocal()
     try:
-        if not db.query(User).filter(User.username == "admin").first():
-            admin_pass = os.environ.get("ADMIN_PASSWORD", "carlion2026")
-            db.add(User(username="admin", hashed_password=hash_password(admin_pass), is_admin=True, is_active=True))
+        admin_user = db.query(User).filter(User.username == "admin").first()
+        env_admin_pass = os.environ.get("ADMIN_PASSWORD")
+
+        if not admin_user:
+            initial_pass = env_admin_pass or "carlion2026"
+            db.add(
+                User(
+                    username="admin",
+                    hashed_password=hash_password(initial_pass),
+                    is_admin=True,
+                    is_active=True,
+                )
+            )
+            db.commit()
+            return
+
+        changed = False
+        if not admin_user.is_admin:
+            admin_user.is_admin = True
+            changed = True
+        if not admin_user.is_active:
+            admin_user.is_active = True
+            changed = True
+
+        # When ADMIN_PASSWORD is set, keep admin login in sync with Railway variable.
+        if env_admin_pass:
+            admin_user.hashed_password = hash_password(env_admin_pass)
+            changed = True
+
+        if changed:
             db.commit()
     finally:
         db.close()
