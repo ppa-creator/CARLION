@@ -451,7 +451,7 @@
 
         @media (max-width: 640px) {
             .main-content {
-                padding: 18px;
+                padding: 14px 12px 80px;
             }
 
             .nav-list,
@@ -460,14 +460,125 @@
             }
 
             .hero-card h2 {
-                font-size: 28px;
+                font-size: 24px;
+            }
+
+            .stat-card strong {
+                font-size: 22px;
+            }
+
+            .panel-card, .table-card {
+                padding: 16px;
+            }
+        }
+
+        /* Hamburger button (mobile only) */
+        .hamburger {
+            display: none;
+            position: fixed;
+            top: 14px;
+            left: 14px;
+            z-index: 300;
+            background: #1f2933;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            font-size: 20px;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        }
+
+        /* Sidebar overlay on mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+        }
+
+        /* Bottom nav bar (mobile) */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 150;
+            background: rgba(22, 28, 36, 0.97);
+            padding: 6px 0 env(safe-area-inset-bottom, 6px);
+            border-top: 1px solid rgba(255,255,255,0.08);
+            justify-content: space-around;
+        }
+
+        .bottom-nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            background: none;
+            border: none;
+            color: rgba(247,244,239,0.6);
+            font-size: 11px;
+            padding: 6px 4px;
+            cursor: pointer;
+            border-radius: 10px;
+            min-width: 48px;
+            transition: color 0.15s;
+        }
+
+        .bottom-nav-btn .bn-icon {
+            font-size: 20px;
+            line-height: 1;
+        }
+
+        .bottom-nav-btn.active, .bottom-nav-btn:hover {
+            color: #5eead4;
+        }
+
+        @media (max-width: 920px) {
+            .hamburger {
+                display: flex;
+            }
+
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -300px;
+                height: 100vh;
+                width: 280px;
+                z-index: 250;
+                transition: left 0.25s ease;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .sidebar-overlay.open {
+                display: block;
+            }
+
+            .main-content {
+                padding-top: 70px;
+            }
+
+            .bottom-nav {
+                display: flex;
             }
         }
     </style>
 </head>
 <body>
+<button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
 <div class="app-shell">
-    <aside class="sidebar">
+    <aside class="sidebar" id="mainSidebar">
         <div class="brand">
             <small>Fleet Workspace</small>
             <h1>CARLION</h1>
@@ -867,6 +978,25 @@
     </main>
 </div>
 
+<!-- Bottom navigation bar (mobile) -->
+<nav class="bottom-nav" id="bottomNav">
+    <button class="bottom-nav-btn active" data-section="vehicles" onclick="showSection('vehicles', this, true)">
+        <span class="bn-icon">🚚</span><span>Vozidlá</span>
+    </button>
+    <button class="bottom-nav-btn" data-section="drivers" onclick="showSection('drivers', this, true)">
+        <span class="bn-icon">👤</span><span>Vodiči</span>
+    </button>
+    <button class="bottom-nav-btn" data-section="trips" onclick="showSection('trips', this, true)">
+        <span class="bn-icon">🛣</span><span>Jazdy</span>
+    </button>
+    <button class="bottom-nav-btn" data-section="refuels" onclick="showSection('refuels', this, true)">
+        <span class="bn-icon">⛽</span><span>Tankovania</span>
+    </button>
+    <button class="bottom-nav-btn" data-section="nastavenia" onclick="showSection('nastavenia', this, true)">
+        <span class="bn-icon">⚙️</span><span>Viac</span>
+    </button>
+</nav>
+
 <!-- Modal: priradenie tankovania k jazde -->
 <div id="refuelModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
     <div style="background:#fffdf8; border-radius:20px; padding:28px; max-width:600px; width:90%; max-height:80vh; overflow-y:auto; box-shadow:0 24px 60px rgba(0,0,0,0.2);">
@@ -964,7 +1094,7 @@ async function loadSectionData(sectionName) {
     }
 }
 
-function showSection(sectionName, triggerButton = null) {
+function showSection(sectionName, triggerButton = null, fromBottomNav = false) {
     document.querySelectorAll('.content-panel').forEach(panel => {
         panel.classList.toggle('active', panel.dataset.section === sectionName);
     });
@@ -973,12 +1103,34 @@ function showSection(sectionName, triggerButton = null) {
         button.classList.toggle('active', button.dataset.section === sectionName);
     });
 
+    // sync bottom nav
+    document.querySelectorAll('.bottom-nav-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.section === sectionName);
+    });
+
     updateSectionFocus(sectionName);
     void loadSectionData(sectionName);
 
     if (triggerButton) {
         triggerButton.blur();
     }
+
+    // close sidebar on mobile after nav click
+    if (fromBottomNav || window.innerWidth <= 920) {
+        closeSidebar();
+    }
+}
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('mainSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('open');
+}
+
+function closeSidebar() {
+    document.getElementById('mainSidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('open');
 }
 
 function setCount(id, count) {
