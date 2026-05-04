@@ -35,19 +35,15 @@
             height: auto;
             object-fit: contain;
         }
-        .logo {
-            text-align: center;
-            font-size: 26px;
-            font-weight: 800;
-            color: #1f2933;
-            letter-spacing: -1px;
-            margin-bottom: 8px;
-        }
-        .subtitle {
-            color: #6b7280;
+        .day-info {
+            margin: 0 0 24px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            background: #f5f7f8;
+            color: #334155;
             font-size: 14px;
             text-align: center;
-            margin-bottom: 30px;
+            border: 1px solid #e5e7eb;
         }
         label {
             display: block;
@@ -114,8 +110,7 @@
         <div class="logo-wrap">
             <img class="logo-image" src="/static/logo-carlion.png" alt="CARLION logo" onerror="this.style.display='none'">
         </div>
-        <div class="logo">CARLION</div>
-        <div class="subtitle">Správa vozového parku – prihláste sa</div>
+        <div id="dayInfo" class="day-info">Načítavam denné info...</div>
         <form id="loginForm" onsubmit="doLogin(event)">
             <label for="username">Používateľské meno</label>
             <input type="text" id="username" autocomplete="username" required>
@@ -143,6 +138,18 @@
             info.style.display = 'block';
             info.innerHTML = '✅ Email bol overený. Teraz sa môžeš prihlásiť.';
         }
+
+        (async function loadDayInfo() {
+            const target = document.getElementById('dayInfo');
+            try {
+                const resp = await fetch('/api/today-info');
+                if (!resp.ok) throw new Error('Failed');
+                const data = await resp.json();
+                target.textContent = data.message || 'Denné info sa nepodarilo načítať.';
+            } catch (e) {
+                target.textContent = 'Denné info sa nepodarilo načítať.';
+            }
+        })();
 
         async function doLogin(e) {
             e.preventDefault();

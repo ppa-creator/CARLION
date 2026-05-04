@@ -1,5 +1,8 @@
 import secrets
 import os
+import json
+from datetime import date
+from urllib import error, request
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -77,6 +80,41 @@ _seed_admin()
 templates = Jinja2Templates(directory="backend/templates")
 
 
+def _get_nameday_sk(today: date) -> str | None:
+    """Fetch Slovak nameday from a public API."""
+    url = "https://nameday.abalin.net/api/V2/date"
+    query = f"?country=sk&day={today.day}&month={today.month}"
+    try:
+        with request.urlopen(url + query, timeout=5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            nameday = data.get("data", {}).get("name")
+            if isinstance(nameday, str) and nameday.strip():
+                return nameday.strip()
+    except (error.URLError, TimeoutError, json.JSONDecodeError, ValueError):
+        return None
+    return None
+
+
+def _get_holiday_sk(today: date) -> str | None:
+    """Fetch Slovak public holiday from a public API."""
+    url = f"https://date.nager.at/api/v3/PublicHolidays/{today.year}/SK"
+    try:
+        with request.urlopen(url, timeout=5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            if not isinstance(data, list):
+                return None
+            iso = today.isoformat()
+            for item in data:
+                if item.get("date") == iso:
+                    local_name = item.get("localName") or item.get("name")
+                    if isinstance(local_name, str) and local_name.strip():
+                        return local_name.strip()
+                    return "Štátny sviatok"
+    except (error.URLError, TimeoutError, json.JSONDecodeError, ValueError):
+        return None
+    return None
+
+
 @app.get("/")
 def root(request: Request):
     if request.session.get("user_id"):
@@ -87,6 +125,24 @@ def root(request: Request):
 @app.get("/health")
 def healthcheck():
     return {"status": "ok"}
+
+
+@app.get("/api/today-info")
+def today_info():
+    today = date.today()
+    holiday = _get_holiday_sk(today)
+    nameday = _get_nameday_sk(today)
+
+    if holiday:
+        message = f"Dnes je sviatok: {holiday}"
+        if nameday:
+            message += f". Meniny má {nameday}."
+        return {"message": message, "holiday": holiday, "nameday": nameday}
+
+    if nameday:
+        return {"message": f"Meniny dnes má: {nameday}", "holiday": None, "nameday": nameday}
+
+    return {"message": "Denné info sa nepodarilo načítať.", "holiday": None, "nameday": None}
 
 
 @app.get("/ui", response_class=HTMLResponse)
