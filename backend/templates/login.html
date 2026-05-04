@@ -74,6 +74,16 @@
             text-align: center;
             min-height: 20px;
         }
+        #infoMsg {
+            color: #065f46;
+            background: #d1fae5;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-top: 12px;
+            text-align: center;
+            padding: 10px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -88,16 +98,24 @@
             <button type="submit" id="loginBtn">Prihlásiť sa</button>
         </form>
         <div id="errorMsg"></div>
+        <div id="infoMsg"></div>
         <div class="login-link" style="text-align:center; margin-top:20px; font-size:13px; color:#6b7280;">
             Nemáš účet? <a href="/register" style="color:#1f2933; font-weight:600;">Registrovať sa zadarmo</a>
         </div>
     </div>
 
     <script>
-        // show expired notice if redirected
-        if (new URLSearchParams(location.search).get('expired')) {
+        const qp = new URLSearchParams(location.search);
+
+        if (qp.get('expired')) {
             document.getElementById('errorMsg').innerHTML =
                 '⏰ Skúšobná doba alebo predplatné vypršalo.<br>Kontaktuj administrátora pre obnovenie prístupu.';
+        }
+
+        if (qp.get('verified')) {
+            const info = document.getElementById('infoMsg');
+            info.style.display = 'block';
+            info.innerHTML = '✅ Email bol overený. Teraz sa môžeš prihlásiť.';
         }
 
         async function doLogin(e) {
@@ -123,6 +141,8 @@
                 const data = await resp.json();
                 if (data.detail === 'EXPIRED') {
                     err.innerHTML = 'Skúšobná doba alebo predplatné vypršalo.<br>Kontaktuj administrátora pre obnovenie prístupu.';
+                } else if (data.detail === 'Účet je neaktívny alebo neoverený') {
+                    err.innerHTML = 'Účet ešte nie je overený emailom alebo je deaktivovaný.<br>Skontroluj email a klikni na overovací odkaz.';
                 } else {
                     err.textContent = data.detail || 'Prihlásenie zlyhalo';
                 }

@@ -85,6 +85,8 @@
         <form id="regForm" onsubmit="doRegister(event)">
             <label for="username">Používateľské meno</label>
             <input type="text" id="username" autocomplete="username" placeholder="jan.novak" required>
+            <label for="email">Email</label>
+            <input type="email" id="email" autocomplete="email" placeholder="jan@firma.sk" required>
             <label for="password">Heslo</label>
             <input type="password" id="password" autocomplete="new-password" placeholder="minimálne 6 znakov" required>
             <div class="hint">Aspoň 6 znakov</div>
@@ -107,6 +109,7 @@
             suc.style.display = 'none';
 
             const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const password2 = document.getElementById('password2').value;
 
@@ -119,7 +122,7 @@
             const resp = await fetch('/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
+                body: JSON.stringify({ username, email, password })
             });
             const data = await resp.json();
 
@@ -131,10 +134,21 @@
             }
 
             suc.style.display = 'block';
-            suc.innerHTML = `🎉 Účet <strong>${data.username}</strong> bol vytvorený!<br>
-                Skúšobná doba platí do <strong>${data.trial_expires_at}</strong>.<br><br>
-                <a href="/login" style="color:#065f46; font-weight:600;">Prihlásiť sa →</a>`;
+            suc.innerHTML = `📧 Poslali sme overovací email na <strong>${data.email}</strong>.<br>
+                Otvor email a klikni na overovací odkaz.<br><br>
+                Po overení sa môžeš prihlásiť.`;
             document.getElementById('regForm').style.display = 'none';
+        }
+
+        const qp = new URLSearchParams(location.search);
+        const verifyError = qp.get('verify_error');
+        if (verifyError) {
+            const err = document.getElementById('errorMsg');
+            if (verifyError === 'invalid_or_expired') {
+                err.textContent = 'Overovací odkaz je neplatný alebo expiroval. Zaregistruj sa znova.';
+            } else if (verifyError === 'email_used') {
+                err.textContent = 'Tento email už je použitý.';
+            }
         }
     </script>
 </body>

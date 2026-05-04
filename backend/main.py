@@ -13,6 +13,8 @@ from backend.models.assignment import DriverVehicleAssignment
 from backend.models.trip import Trip
 from backend.models.refuel import Refuel
 from backend.models.user import User
+from backend.models.email_verification import EmailVerification
+from backend.models.user_email import UserEmail
 from backend.routes.vehicles import router as vehicles_router
 from backend.routes.drivers import router as drivers_router
 from backend.routes.assignments import router as assignments_router

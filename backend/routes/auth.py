@@ -1,17 +1,70 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
+import hashlib
+import os
+import secrets
+import smtplib
+from email.message import EmailMessage
+from urllib.parse import quote_plus
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import RedirectResponse
+from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 
 from backend.auth import hash_password, verify_password
 from backend.db.database import SessionLocal
+from backend.models.email_verification import EmailVerification
 from backend.models.user import User
+from backend.models.user_email import UserEmail
 from backend.schemas.user import LoginRequest, RegisterRequest, SubscriptionUpdate, UserCreate, UserRead
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 TRIAL_DAYS = 30
+VERIFY_TOKEN_HOURS = 24
+
+
+class RegisterResponse(BaseModel):
+    ok: bool
+    email: EmailStr
+    detail: str
+
+
+def _hash_token(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def _send_verification_email(recipient_email: str, username: str, verify_token: str) -> None:
+    smtp_host = os.environ.get("SMTP_HOST")
+    smtp_port = int(os.environ.get("SMTP_PORT", "587"))
+    smtp_user = os.environ.get("SMTP_USER")
+    smtp_password = os.environ.get("SMTP_PASSWORD")
+    smtp_sender = os.environ.get("SMTP_SENDER")
+
+    if not smtp_host or not smtp_sender:
+        raise HTTPException(
+            status_code=503,
+            detail="Email služba nie je nastavená. Kontaktuj administrátora.",
+        )
+
+    app_base_url = os.environ.get("APP_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
+    verify_link = f"{app_base_url}/auth/verify-email?token={quote_plus(verify_token)}"
+
+    msg = EmailMessage()
+    msg["Subject"] = "CARLION - overenie emailu"
+    msg["From"] = smtp_sender
+    msg["To"] = recipient_email
+    msg.set_content(
+        f"Ahoj {username},\n\n"
+        f"klikni na tento odkaz pre overenie emailu a aktivaciu uctu:\n{verify_link}\n\n"
+        f"Platnost odkazu je {VERIFY_TOKEN_HOURS} hodin.\n"
+    )
+
+    with smtplib.SMTP(smtp_host, smtp_port, timeout=20) as server:
+        server.starttls()
+        if smtp_user and smtp_password:
+            server.login(smtp_user, smtp_password)
+        server.send_message(msg)
 
 
 def get_db():
@@ -44,23 +97,103 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
     return user
 
 
-@router.post("/register", response_model=UserRead)
+@router.post("/register", response_model=RegisterResponse)
 def register(body: RegisterRequest, db: Session = Depends(get_db)):
     if len(body.password) < 6:
         raise HTTPException(status_code=400, detail="Heslo musí mať aspoň 6 znakov")
-    existing = db.query(User).filter(User.username == body.username).first()
+
+    username = body.username.strip()
+    email = body.email.strip().lower()
+
+    if not username:
+        raise HTTPException(status_code=400, detail="Používateľské meno je povinné")
+
+    existing = db.query(User).filter(User.username == username).first()
     if existing:
         raise HTTPException(status_code=400, detail="Používateľ s týmto menom už existuje")
+
+    existing_email = db.query(UserEmail).filter(UserEmail.email == email).first()
+    if existing_email:
+        raise HTTPException(status_code=400, detail="Tento email je už použitý")
+
+    # Clear expired pending records for same username/email.
+    now = datetime.utcnow()
+    db.query(EmailVerification).filter(
+        EmailVerification.expires_at < now,
+        (EmailVerification.username == username) | (EmailVerification.email == email),
+    ).delete(synchronize_session=False)
+
+    token = secrets.token_urlsafe(32)
+    token_hash = _hash_token(token)
+
+    pending = db.query(EmailVerification).filter(
+        (EmailVerification.username == username) | (EmailVerification.email == email)
+    ).first()
+
+    if pending:
+        pending.username = username
+        pending.email = email
+        pending.hashed_password = hash_password(body.password)
+        pending.token_hash = token_hash
+        pending.expires_at = now + timedelta(hours=VERIFY_TOKEN_HOURS)
+    else:
+        db.add(
+            EmailVerification(
+                username=username,
+                email=email,
+                hashed_password=hash_password(body.password),
+                token_hash=token_hash,
+                expires_at=now + timedelta(hours=VERIFY_TOKEN_HOURS),
+            )
+        )
+
+    db.commit()
+
+    _send_verification_email(email, username, token)
+
+    return {
+        "ok": True,
+        "email": email,
+        "detail": "Na email bol odoslaný overovací odkaz.",
+    }
+
+
+@router.get("/verify-email")
+def verify_email(token: str, db: Session = Depends(get_db)):
+    token_hash = _hash_token(token)
+    pending = db.query(EmailVerification).filter(EmailVerification.token_hash == token_hash).first()
+    now = datetime.utcnow()
+
+    if not pending or pending.expires_at < now:
+        return RedirectResponse(url="/register?verify_error=invalid_or_expired")
+
+    existing = db.query(User).filter(User.username == pending.username).first()
+    if existing:
+        db.delete(pending)
+        db.commit()
+        return RedirectResponse(url="/login?verified=1")
+
+    used_email = db.query(UserEmail).filter(UserEmail.email == pending.email).first()
+    if used_email:
+        db.delete(pending)
+        db.commit()
+        return RedirectResponse(url="/register?verify_error=email_used")
+
     user = User(
-        username=body.username,
-        hashed_password=hash_password(body.password),
+        username=pending.username,
+        hashed_password=pending.hashed_password,
         is_admin=False,
+        is_active=True,
         trial_expires_at=date.today() + timedelta(days=TRIAL_DAYS),
     )
     db.add(user)
+    db.flush()
+
+    db.add(UserEmail(user_id=user.id, email=pending.email))
+    db.delete(pending)
     db.commit()
-    db.refresh(user)
-    return user
+
+    return RedirectResponse(url="/login?verified=1")
 
 
 @router.post("/login")
@@ -69,7 +202,7 @@ def login(body: LoginRequest, request: Request, db: Session = Depends(get_db)):
     if not user or not verify_password(body.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Nesprávne meno alebo heslo")
     if not user.is_active:
-        raise HTTPException(status_code=403, detail="Účet je deaktivovaný")
+        raise HTTPException(status_code=403, detail="Účet je neaktívny alebo neoverený")
     request.session["user_id"] = user.id
     return {"ok": True, "username": user.username, "is_admin": user.is_admin}
 
