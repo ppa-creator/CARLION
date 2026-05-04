@@ -141,14 +141,56 @@
 
         (async function loadDayInfo() {
             const target = document.getElementById('dayInfo');
+            const now = new Date();
+            const day = now.getDate();
+            const month = now.getMonth() + 1;
+            const key = `${day}-${month}`;
+
+            // Slovak fixed-date public holidays fallback.
+            const holidays = {
+                '1-1': 'Deň vzniku Slovenskej republiky',
+                '6-1': 'Zjavenie Pána',
+                '1-5': 'Sviatok práce',
+                '8-5': 'Deň víťazstva nad fašizmom',
+                '5-7': 'Sviatok svätého Cyrila a Metoda',
+                '29-8': 'Výročie Slovenského národného povstania',
+                '1-9': 'Deň Ústavy Slovenskej republiky',
+                '15-9': 'Sedembolestná Panna Mária',
+                '1-11': 'Sviatok Všetkých svätých',
+                '17-11': 'Deň boja za slobodu a demokraciu',
+                '24-12': 'Štedrý deň',
+                '25-12': 'Prvý sviatok vianočný',
+                '26-12': 'Druhý sviatok vianočný'
+            };
+
+            let nameday = null;
             try {
-                const resp = await fetch('/api/today-info');
-                if (!resp.ok) throw new Error('Failed');
-                const data = await resp.json();
-                target.textContent = data.message || 'Denné info sa nepodarilo načítať.';
+                const resp = await fetch(`https://nameday.abalin.net/api/V2/date?country=sk&day=${day}&month=${month}`);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data && data.data && data.data.name) {
+                        nameday = String(data.data.name).trim();
+                    }
+                }
             } catch (e) {
-                target.textContent = 'Denné info sa nepodarilo načítať.';
+                // Ignore; holiday fallback below still works.
             }
+
+            const holiday = holidays[key] || null;
+            if (holiday && nameday) {
+                target.textContent = `Dnes je sviatok: ${holiday}. Meniny má ${nameday}.`;
+                return;
+            }
+            if (holiday) {
+                target.textContent = `Dnes je sviatok: ${holiday}.`;
+                return;
+            }
+            if (nameday) {
+                target.textContent = `Meniny dnes má: ${nameday}`;
+                return;
+            }
+
+            target.textContent = 'Prajem pekný deň.';
         })();
 
         async function doLogin(e) {
