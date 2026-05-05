@@ -80,6 +80,25 @@ _seed_admin()
 templates = Jinja2Templates(directory="backend/templates")
 
 
+def _is_nonempty_env(name: str) -> bool:
+    value = os.environ.get(name)
+    return bool(value and value.strip())
+
+
+def _smtp_env_status() -> dict:
+    return {
+        "SMTP_HOST": _is_nonempty_env("SMTP_HOST"),
+        "SMTP_PORT": _is_nonempty_env("SMTP_PORT"),
+        "SMTP_USER": _is_nonempty_env("SMTP_USER"),
+        "SMTP_PASSWORD": _is_nonempty_env("SMTP_PASSWORD"),
+        "SMTP_SENDER": _is_nonempty_env("SMTP_SENDER"),
+        "APP_BASE_URL": _is_nonempty_env("APP_BASE_URL"),
+    }
+
+
+print(f"[CARLION] SMTP env status at startup: {_smtp_env_status()}")
+
+
 def _get_nameday_sk(today: date) -> str | None:
     """Fetch Slovak nameday from a public API."""
     url = "https://nameday.abalin.net/api/V2/date"
@@ -125,6 +144,13 @@ def root(request: Request):
 @app.get("/health")
 def healthcheck():
     return {"status": "ok"}
+
+
+@app.get("/health/email-config")
+def health_email_config():
+    status = _smtp_env_status()
+    status["configured"] = status["SMTP_HOST"] and (status["SMTP_SENDER"] or status["SMTP_USER"])
+    return status
 
 
 @app.get("/api/today-info")
