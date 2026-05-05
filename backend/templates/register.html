@@ -119,25 +119,45 @@
             btn.disabled = true;
             btn.textContent = 'Vytváranie účtu...';
 
-            const resp = await fetch('/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, email, password })
-            });
-            const data = await resp.json();
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-            if (!resp.ok) {
-                err.textContent = data.detail || 'Registrácia zlyhala';
+                const resp = await fetch('/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password }),
+                    signal: controller.signal,
+                });
+                clearTimeout(timeoutId);
+
+                let data = {};
+                try {
+                    data = await resp.json();
+                } catch {
+                    data = {};
+                }
+
+                if (!resp.ok) {
+                    err.textContent = data.detail || 'Registrácia zlyhala';
+                    return;
+                }
+
+                suc.style.display = 'block';
+                suc.innerHTML = `📧 Poslali sme overovací email na <strong>${data.email}</strong>.<br>
+                    Otvor email a klikni na overovací odkaz.<br><br>
+                    Po overení sa môžeš prihlásiť.`;
+                document.getElementById('regForm').style.display = 'none';
+            } catch (ex) {
+                if (ex.name === 'AbortError') {
+                    err.textContent = 'Požiadavka trvá príliš dlho. Skús to prosím znova.';
+                } else {
+                    err.textContent = 'Nepodarilo sa spojiť so serverom. Skús to prosím znova.';
+                }
+            } finally {
                 btn.disabled = false;
                 btn.textContent = 'Vytvoriť účet zdarma';
-                return;
             }
-
-            suc.style.display = 'block';
-            suc.innerHTML = `📧 Poslali sme overovací email na <strong>${data.email}</strong>.<br>
-                Otvor email a klikni na overovací odkaz.<br><br>
-                Po overení sa môžeš prihlásiť.`;
-            document.getElementById('regForm').style.display = 'none';
         }
 
         const qp = new URLSearchParams(location.search);

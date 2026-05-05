@@ -2,6 +2,7 @@ from datetime import date, datetime, timedelta
 import hashlib
 import os
 import secrets
+import socket
 import smtplib
 from email.message import EmailMessage
 from urllib.parse import quote_plus
@@ -74,11 +75,17 @@ def _send_verification_email(recipient_email: str, username: str, verify_token: 
         f"Platnost odkazu je {VERIFY_TOKEN_HOURS} hodin.\n"
     )
 
-    with smtplib.SMTP(smtp_host, smtp_port, timeout=20) as server:
-        server.starttls()
-        if smtp_user and smtp_password:
-            server.login(smtp_user, smtp_password)
-        server.send_message(msg)
+    try:
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=20) as server:
+            server.starttls()
+            if smtp_user and smtp_password:
+                server.login(smtp_user, smtp_password)
+            server.send_message(msg)
+    except (smtplib.SMTPException, OSError, TimeoutError, socket.timeout):
+        raise HTTPException(
+            status_code=503,
+            detail="Email sa momentálne nepodarilo odoslať. Skús to prosím znova o chvíľu.",
+        )
 
 
 def get_db():
