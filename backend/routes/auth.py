@@ -1,5 +1,6 @@
 from datetime import date, datetime, timedelta
 import hashlib
+import logging
 import os
 import secrets
 import socket
@@ -20,6 +21,7 @@ from backend.models.user_email import UserEmail
 from backend.schemas.user import LoginRequest, RegisterRequest, SubscriptionUpdate, UserCreate, UserRead
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+logger = logging.getLogger(__name__)
 
 TRIAL_DAYS = 30
 VERIFY_TOKEN_HOURS = 24
@@ -81,10 +83,23 @@ def _send_verification_email(recipient_email: str, username: str, verify_token: 
             if smtp_user and smtp_password:
                 server.login(smtp_user, smtp_password)
             server.send_message(msg)
-    except (smtplib.SMTPException, OSError, TimeoutError, socket.timeout):
+    except smtplib.SMTPAuthenticationError as ex:
+        logger.warning("SMTP auth failed for sender %s: %s", smtp_sender, ex)
         raise HTTPException(
             status_code=503,
-            detail="Email sa momentálne nepodarilo odoslať. Skús to prosím znova o chvíľu.",
+            detail="SMTP prihlásenie zlyhalo. Skontroluj SMTP_USER a SMTP_PASSWORD (pri Gmail použi App Password).",
+        )
+    except (smtplib.SMTPConnectError, smtplib.SMTPServerDisconnected, OSError, TimeoutError, socket.timeout) as ex:
+        logger.warning("SMTP connection failed to %s:%s: %s", smtp_host, smtp_port, ex)
+        raise HTTPException(
+            status_code=503,
+            detail="Nepodarilo sa spojiť so SMTP serverom. Skontroluj SMTP_HOST/SMTP_PORT a dostupnosť servera.",
+        )
+    except smtplib.SMTPException as ex:
+        logger.warning("SMTP send failed: %s", ex)
+        raise HTTPException(
+            status_code=503,
+            detail="SMTP server odmietol odoslanie emailu. Skontroluj SMTP nastavenia odosielateľa.",
         )
 
 
