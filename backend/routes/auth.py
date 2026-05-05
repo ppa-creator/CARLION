@@ -1,11 +1,13 @@
 from datetime import date, datetime, timedelta
 import hashlib
+import json
 import logging
 import os
 import secrets
 import socket
 import smtplib
 from email.message import EmailMessage
+from urllib import error, request
 from urllib.parse import quote_plus
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -45,7 +47,68 @@ def _env_nonempty(name: str) -> str | None:
     return value or None
 
 
+def _send_verification_via_resend(
+    recipient_email: str,
+    username: str,
+    verify_link: str,
+    resend_api_key: str,
+    resend_from: str,
+) -> None:
+    payload = {
+        "from": resend_from,
+        "to": [recipient_email],
+        "subject": "CARLION - overenie emailu",
+        "text": (
+            f"Ahoj {username},\n\n"
+            f"klikni na tento odkaz pre overenie emailu a aktivaciu uctu:\n{verify_link}\n\n"
+            f"Platnost odkazu je {VERIFY_TOKEN_HOURS} hodin.\n"
+        ),
+    }
+    req = request.Request(
+        "https://api.resend.com/emails",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {resend_api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with request.urlopen(req, timeout=20) as resp:
+            if resp.status < 200 or resp.status >= 300:
+                raise HTTPException(status_code=503, detail="Resend API vrátil neúspešnú odpoveď.")
+    except error.HTTPError as ex:
+        logger.warning("Resend HTTP error: %s", ex)
+        raise HTTPException(
+            status_code=503,
+            detail="Email služba (Resend) odmietla odoslanie. Skontroluj RESEND_API_KEY a RESEND_FROM.",
+        )
+    except (error.URLError, TimeoutError, OSError) as ex:
+        logger.warning("Resend connection failed: %s", ex)
+        raise HTTPException(
+            status_code=503,
+            detail="Nepodarilo sa spojiť s email službou Resend.",
+        )
+
+
 def _send_verification_email(recipient_email: str, username: str, verify_token: str) -> None:
+    app_base_url = os.environ.get("APP_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
+    verify_link = f"{app_base_url}/auth/verify-email?token={quote_plus(verify_token)}"
+
+    resend_api_key = _env_nonempty("RESEND_API_KEY")
+    resend_from = _env_nonempty("RESEND_FROM")
+    if resend_api_key:
+        if not resend_from:
+            raise HTTPException(status_code=503, detail="Chýba RESEND_FROM pre Resend odosielanie.")
+        _send_verification_via_resend(
+            recipient_email=recipient_email,
+            username=username,
+            verify_link=verify_link,
+            resend_api_key=resend_api_key,
+            resend_from=resend_from,
+        )
+        return
+
     smtp_host = _env_nonempty("SMTP_HOST")
     smtp_port = int(os.environ.get("SMTP_PORT", "587"))
     smtp_user = _env_nonempty("SMTP_USER")
@@ -61,11 +124,11 @@ def _send_verification_email(recipient_email: str, username: str, verify_token: 
     if missing:
         raise HTTPException(
             status_code=503,
-            detail=f"Email služba nie je nastavená (chýba: {', '.join(missing)}).",
+            detail=(
+                f"Email služba nie je nastavená (chýba: {', '.join(missing)}). "
+                "Na Railway Free/Trial/Hobby použi RESEND_API_KEY + RESEND_FROM."
+            ),
         )
-
-    app_base_url = os.environ.get("APP_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
-    verify_link = f"{app_base_url}/auth/verify-email?token={quote_plus(verify_token)}"
 
     msg = EmailMessage()
     msg["Subject"] = "CARLION - overenie emailu"
@@ -93,7 +156,10 @@ def _send_verification_email(recipient_email: str, username: str, verify_token: 
         logger.warning("SMTP connection failed to %s:%s: %s", smtp_host, smtp_port, ex)
         raise HTTPException(
             status_code=503,
-            detail="Nepodarilo sa spojiť so SMTP serverom. Skontroluj SMTP_HOST/SMTP_PORT a dostupnosť servera.",
+            detail=(
+                "Nepodarilo sa spojiť so SMTP serverom. "
+                "Na Railway Free/Trial/Hobby je SMTP blokované, použi Resend API (RESEND_API_KEY, RESEND_FROM)."
+            ),
         )
     except smtplib.SMTPException as ex:
         logger.warning("SMTP send failed: %s", ex)

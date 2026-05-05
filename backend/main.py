@@ -92,6 +92,8 @@ def _smtp_env_status() -> dict:
         "SMTP_USER": _is_nonempty_env("SMTP_USER"),
         "SMTP_PASSWORD": _is_nonempty_env("SMTP_PASSWORD"),
         "SMTP_SENDER": _is_nonempty_env("SMTP_SENDER"),
+        "RESEND_API_KEY": _is_nonempty_env("RESEND_API_KEY"),
+        "RESEND_FROM": _is_nonempty_env("RESEND_FROM"),
         "APP_BASE_URL": _is_nonempty_env("APP_BASE_URL"),
     }
 
@@ -149,7 +151,10 @@ def healthcheck():
 @app.get("/health/email-config")
 def health_email_config():
     status = _smtp_env_status()
-    status["configured"] = status["SMTP_HOST"] and (status["SMTP_SENDER"] or status["SMTP_USER"])
+    smtp_configured = status["SMTP_HOST"] and (status["SMTP_SENDER"] or status["SMTP_USER"])
+    resend_configured = status["RESEND_API_KEY"] and status["RESEND_FROM"]
+    status["configured"] = smtp_configured or resend_configured
+    status["provider"] = "resend" if resend_configured else ("smtp" if smtp_configured else "none")
     return status
 
 
