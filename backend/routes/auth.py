@@ -34,17 +34,31 @@ def _hash_token(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
-def _send_verification_email(recipient_email: str, username: str, verify_token: str) -> None:
-    smtp_host = os.environ.get("SMTP_HOST")
-    smtp_port = int(os.environ.get("SMTP_PORT", "587"))
-    smtp_user = os.environ.get("SMTP_USER")
-    smtp_password = os.environ.get("SMTP_PASSWORD")
-    smtp_sender = os.environ.get("SMTP_SENDER")
+def _env_nonempty(name: str) -> str | None:
+    value = os.environ.get(name)
+    if value is None:
+        return None
+    value = value.strip()
+    return value or None
 
-    if not smtp_host or not smtp_sender:
+
+def _send_verification_email(recipient_email: str, username: str, verify_token: str) -> None:
+    smtp_host = _env_nonempty("SMTP_HOST")
+    smtp_port = int(os.environ.get("SMTP_PORT", "587"))
+    smtp_user = _env_nonempty("SMTP_USER")
+    smtp_password = _env_nonempty("SMTP_PASSWORD")
+    smtp_sender = _env_nonempty("SMTP_SENDER") or smtp_user
+
+    missing = []
+    if not smtp_host:
+        missing.append("SMTP_HOST")
+    if not smtp_sender:
+        missing.append("SMTP_SENDER alebo SMTP_USER")
+
+    if missing:
         raise HTTPException(
             status_code=503,
-            detail="Email služba nie je nastavená. Kontaktuj administrátora.",
+            detail=f"Email služba nie je nastavená (chýba: {', '.join(missing)}).",
         )
 
     app_base_url = os.environ.get("APP_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
