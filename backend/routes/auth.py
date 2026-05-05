@@ -78,10 +78,14 @@ def _send_verification_via_resend(
             if resp.status < 200 or resp.status >= 300:
                 raise HTTPException(status_code=503, detail="Resend API vrátil neúspešnú odpoveď.")
     except error.HTTPError as ex:
-        logger.warning("Resend HTTP error: %s", ex)
+        try:
+            body = ex.read().decode("utf-8", errors="replace")
+        except Exception:
+            body = str(ex)
+        logger.warning("Resend HTTP error %s: %s", ex.code, body)
         raise HTTPException(
             status_code=503,
-            detail="Email služba (Resend) odmietla odoslanie. Skontroluj RESEND_API_KEY a RESEND_FROM.",
+            detail=f"Resend chyba {ex.code}: {body}",
         )
     except (error.URLError, TimeoutError, OSError) as ex:
         logger.warning("Resend connection failed: %s", ex)
